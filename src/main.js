@@ -1,8 +1,13 @@
 import Vue from 'vue'
 import App from './App.vue'
 
-Vue.config.productionTip = false
+import routes from './routes'
+import store from './store'
+
+require('@/utils/mock')
 
 new Vue({
+  routes,
+  store,
   render: h => h(App),
 }).$mount('#app')
