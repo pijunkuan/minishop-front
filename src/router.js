@@ -33,7 +33,7 @@ export const routes = [
 		component: r => require(['./pages/Login/Forget.vue'],r)
 	},
 	{
-		path:'/home',
+		path:'/',
 		name:'Home',
 		component: r => require(['./pages/Home/index.vue'], r)
 	},

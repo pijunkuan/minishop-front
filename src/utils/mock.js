@@ -1,8 +1,12 @@
 import Mock from 'mockjs'
 
-const loginData = ()=>{
-	let data
-	return {data:data}
-}
+const theme = Mock.mock('/theme','get',()=>{
+	return {
+		code:200,
+		data:{
+			theme:'hotred'
+		}
+	}
+})
 
-Mock.mock('url',/post/i, loginData)
+export default { theme }

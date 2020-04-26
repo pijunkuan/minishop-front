@@ -1,9 +1,13 @@
+/*
+	后端数据发起
+ */
+
 import axios from 'axios'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
 const service = axios.create({
-	baseURL:''
+	baseURL:'http://localhost:8080'
 })
 
 service.interceptors.request.use(

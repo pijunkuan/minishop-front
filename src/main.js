@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import App from './App.vue'
-
 import router from './router'
 import store from './store'
 
-import '@/assets/style/index.styl'
+import './utils/theme.js'
+
+import index from '@/components/index'
+Vue.use(index)
 
 require('@/utils/mock')
 

@@ -5,12 +5,23 @@ function resolve(dir) {
 }
 
 module.exports = {
+  css:{
+    loaderOptions:{
+      sass:{
+        prependData:`
+          @import "@/assets/style/mixin.scss";
+          @import "@/assets/style/theme.scss";
+        `
+      }
+    }
+  },
 	configureWebpack: {
-    	resolve: {
-      		alias: {
-        		'@': resolve('src')
-      		}
-    	}
-    },
-    productionSourceMap: false
+    resolve: {
+     		alias: {
+       		'@': resolve('src')
+     		}
+    }
+  },
+  productionSourceMap: false,
+  publicPath:'/'
 }
