@@ -65,10 +65,25 @@ export default{
     },
     data(){
         return{
-            focused:false
+            focused:false,
+            inputValue:''
+        }
+    },
+    mounted(){
+        this.setNativeInputValue()
+    },
+    computed:{
+        nativeInputValue(){
+            return this.value === null || this.value === undefined ? '' : String(this.value)
         }
     },
     methods:{
+        setNativeInputValue(){
+            const input = this.getInput()
+            if(!input) return
+            if(input.value === this.nativeInputValue) return
+            input.value = this.nativeInputValue
+        },
         getInput(){
             return this.$refs.input
         },
@@ -91,6 +106,19 @@ export default{
             this.$emit('change','')
             this.$emit('clear')
         }
+    },
+    watch:{
+        nativeInputValue(){
+            this.setNativeInputValue()
+        }
     }
 }
 </script>
+
+<style lang="scss" scoped>
+@import '@/assets/style/base.scss';
+.shop-input{
+    border-width:1px;
+    border-style:solid;
+}
+</style>
