@@ -1,10 +1,11 @@
 <template>
     <div 
         class="shop-image"
+        :style="{ height:height + 'px' , width:width + 'px' , lineHeight:height + 'px'}"
         :class="[
             type + '-image',
             {
-                'rounded':rounded
+                'is-rounded':rounded
             }
         ]">
         <slot v-if="loading" name="placeholder">
@@ -65,11 +66,9 @@
                 if(this.$isServer) return
                 this.loading=true
                 this.error=false
-
                 const img = new Image()
                 img.onload = () => this.handleLoad()
                 img.onerror = this.handleError.bind(this)
-
                 img.src = this.src
 
             },
@@ -97,11 +96,13 @@
 .shop-image__placeholder,.shop-image__error{
     color:$other-font-color;
 }
-.round-image{
-    display: inline-block;
-    overflow: hidden;
+.round-image img{
     border-radius: 50%;
 }
+
+.square-image.is-rounded img{
+    border-radius: 10px;
+} 
 
 
 </style>
