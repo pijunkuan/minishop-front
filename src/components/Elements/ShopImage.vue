@@ -1,7 +1,6 @@
 <template>
     <div 
         class="shop-image"
-        :style="{ height: height + 'px', width: width + 'px' ,lineHeight:height+'px'}"
         :class="[
             type + '-image',
             {
@@ -26,8 +25,13 @@
         name:"ShopImage",
         props:{
             src:String,
-            height:Number,
-            width:Number,
+            height:{
+                type:Number,
+                default:null
+            },
+            width:{
+                type:Number
+            },
             type:{
                 type:String,
                 default:"square"
@@ -55,6 +59,7 @@
         mounted(){
             this.loadImage()
         },
+
         methods:{
             loadImage(){
                 if(this.$isServer) return
@@ -62,18 +67,16 @@
                 this.error=false
 
                 const img = new Image()
-                img.onload = e => this.handleLoad(e)
-                // img.onerror = this.handleError.bind(this)
+                img.onload = () => this.handleLoad()
+                img.onerror = this.handleError.bind(this)
 
                 img.src = this.src
 
             },
-            handleLoad(e) {
+            handleLoad() {
                 this.loading = false
-                console.log(e)
             },
             handleError(e) {
-                console.log(e)
                 this.loading = false
                 this.error = true
                 this.$emit('error', e)
