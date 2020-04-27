@@ -10,7 +10,7 @@ export default {
     data(){
         return{
             btnLoading:false,
-            test:''
+            test:'888'
         }
     },
     computed:{
