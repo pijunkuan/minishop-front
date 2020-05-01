@@ -41,6 +41,7 @@ export default{
             if(index === 1 && this.$route.name !== 'Home') this.$router.push({name:'Home'})
             if(index === 2 && this.$route.name !== 'Types') this.$router.push({name:'Types'})
             if(index === 3 && this.$route.name !== 'Cart') this.$router.push({name:'Cart'})
+            if(index === 4 && this.$route.name !== 'UserHome') this.$router.push({name:'UserHome'})
         }
     }
 }

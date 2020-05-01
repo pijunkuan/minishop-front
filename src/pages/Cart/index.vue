@@ -3,36 +3,46 @@
     <page-loading :loading="loading"></page-loading>
     <div class="cart-functional">
         <shop-checkbox v-model="selectAll" @change="checkAll">全选</shop-checkbox>
-        <div>编辑</div>
+        <div @click="toEdit">{{ isEdit ? '取消' : '编辑' }}</div>
     </div>
-    <div class="cart-list">
-        <div class="cart-list-item" v-for="(item,index) in items" :key="index">
-            <shop-checkbox v-model="selected" :label="item.id"></shop-checkbox>
-            <shop-image :src="item.src" rounded type="fit" :width="80">
-                <div class="cart-image-placeholder" slot="error"><i class="iconfont icontupian"></i></div>
-                <div class="cart-image-placeholder" slot="placeholder"><i class="iconfont icontupian"></i></div>
-            </shop-image>
-            <div class="cart-list-item__info">
-                <div class="cart-list-item__info-title">{{ item.title }}</div>
-                <div class="cart-list-item__info-subtitle"><div>{{ item.variant.title }}</div></div>
-                <div>¥ {{ item.price }}</div>
-                <div>
-                    <shop-input-num
-                        :value="item.quantity"
-                        :max="item.limit ? item.limit : item.stock"
-                        :min="1"
-                        :disabled="!item.stock"
-                        @change="changeNum(item)">
-                    </shop-input-num>
+    <div class="cart-list" :style="{height:height + 'px'}">
+        <div class="cart-list-items">
+            <div class="cart-list-item" v-for="(item,index) in items" :key="index">
+                <shop-checkbox v-model="selected" :label="item.id" @change="changeSelect(item)"></shop-checkbox>
+                <shop-image :src="item.src" rounded type="fit" :width="80">
+                    <div class="cart-image-placeholder" slot="error"><i class="iconfont icontupian"></i></div>
+                    <div class="cart-image-placeholder" slot="placeholder"><i class="iconfont icontupian"></i></div>
+                </shop-image>
+                <div class="cart-list-item__info">
+                    <div class="cart-list-item__info-title">{{ item.title }}</div>
+                    <div class="cart-list-item__info-subtitle"><div>{{ item.variant.title }}</div></div>
+                    <div class="cart-list-item__info-price">¥ <strong>{{ item.price }}</strong></div>
+                    <div class="cart-list-item__info-amount">
+                        <shop-input-num
+                            :value="item.quantity"
+                            :max="item.limit ? item.limit : item.stock"
+                            :min="1"
+                            :disabled="!item.stock || isEdit"
+                            @change="changeNum(item,$event)">
+                        </shop-input-num>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="cart-footer">
-        <div>
+        <div class="cart-footer-num" v-if="!isEdit">
             总计：<span>¥ <strong>{{ total }}</strong></span>
         </div>
-        <div class="cart-footer-button"><shop-button size="medium">确认订单</shop-button></div>
+        <div class="cart-footer-button" v-if="!isEdit">
+            <shop-button size="medium">确认订单</shop-button>
+        </div>
+        <div class="cart-footer-button" v-if="isEdit" style="text-align:center">
+            <shop-button size="medium">移除选中</shop-button>
+        </div>
+        <div class="cart-footer-button" v-if="isEdit" style="text-align:center">
+            <shop-button size="medium">全部移除</shop-button>
+        </div>
     </div>
 </div>
 </template>
@@ -42,23 +52,37 @@ export default{
     data(){
         return{
             loading:false,
+            height:0,
             items:[
-                { id:1, title:'测试商品', quantity:1, price:20, variant:{ title:'1件装'}},
-                { id:2, title:'测试商品', quantity:1, price:20, variant:{ title:'1件装'}},
-                { id:3, title:'测试商品', quantity:1, price:20, variant:{ title:'1件装'}},
-                { id:4, title:'测试商品', quantity:1, price:20, variant:{ title:'1件装'}},
+                { id:1, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
+                { id:2, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
+                { id:3, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
+                { id:4, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
             ],
             selected:[],
-            selectAll:false
+            selectItems:[],
+            selectAll:false,
+            isEdit:false
         }
     },
     created(){
         this.getItems()
     },
+    mounted(){
+        this.$nextTick(()=>{
+            this.height = window.innerHeight - 126
+        })
+    },
     computed:{
         total(){
-            let amount = 1
-            return amount
+            let _amount = 0
+            if(this.selectItems.length !== 0){
+                this.selectItems.map(v=>{
+                    _amount += v.quantity * v.price
+                })
+                _amount = _amount.toFixed(2)
+            }
+            return _amount
         }
     },
     methods:{
@@ -70,13 +94,26 @@ export default{
         },
         checkAll(){
             this.selected = []
+            this.selectItems = []
             if(!this.selectAll) return
             this.items.map(v=>{
                 this.selected.push(v.id)
+                this.selectItems.push(v)
             })
         },
-        changeNum(item){
-            console.log(item)
+        changeSelect(item){
+            const _index = this.selected.indexOf(item.id)
+            if(_index !== -1) this.selectItems.push(item)
+                else this.selectItems.splice(_index,1)
+        },
+        changeNum(item,val){
+            item.quantity = val
+        },
+        toEdit(){
+            this.isEdit = !this.isEdit
+            this.selectAll = false
+            this.selected = []
+            this.selectItems = []
         }
     },
     watch:{
@@ -95,8 +132,11 @@ export default{
 <style lang="scss" scoped>
 @import '@/assets/style/base.scss';
 .cart-functional{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
     background-color:#fff;
-    margin-bottom:10px;
     padding:5px;
     display:flex;
     font-size:$middle-font-size;
@@ -108,8 +148,12 @@ export default{
     text-align:right;
 }
 .cart-list{
-    background-color:#fff;
+    margin-top:32px;
+    overflow-y:scroll;
+}
+.cart-list-items{
     margin:10px 0;
+    background-color:#fff;
 }
 .cart-list-item{
     padding:10px;
@@ -153,6 +197,17 @@ export default{
     border-radius:3px;
     color:$sub-font-color;
 }
+.cart-list-item__info-price{
+    font-size:$small-font-size;
+    @include price-color(1);
+}
+.cart-list-item__info-price strong{
+    font-size:$normal-font-size;
+}
+.cart-list-item__info-amount{
+    text-align:right;
+}
+
 .cart-footer{
     position:fixed;
     display:flex;
@@ -167,6 +222,17 @@ export default{
 }
 .cart-footer>div{
     flex:1;
+}
+.cart-footer-num{
+    line-height:44px;
+    font-size:$small-font-size;
+    color:$sub-font-color;
+}
+.cart-footer-num span{
+    @include price-color(1);
+}
+.cart-footer-num strong{
+    font-size:$normal-font-size;
 }
 .cart-footer .cart-footer-button{
     text-align:right;

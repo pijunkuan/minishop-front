@@ -94,35 +94,33 @@ export const routes = [
 		component: r => require(['./pages/Checkout/Checksuc.vue'], r)
 	},
 	{
-		path:'/user',
-		name:'User',
-		children:[
-			{
-				path:'home',
-				name:'UserHome',
-				component: r => require(['./pages/User/Home.vue'], r)
-			},
-			{
-				path:'wallet',
-				name:'UserWallet',
-				component: r => require(['./pages/User/Wallet.vue'], r)
-			},
-			{
-				path:'order',
-				name:'UserOrder',
-				component: r => require(['./pages/User/Order.vue'], r)
-			},
-			{
-				path:'order/detail',
-				name:'UserOrderDetail',
-				component: r => require(['./pages/User/OrderDetail.vue'], r)
-			},
-			{
-				path:'address',
-				name:'UserAddress',
-				component: r => require(['./pages/User/Address.vue'], r)
-			}
-		]
+		path:'/user/home',
+		name:'UserHome',
+		component: r => require(['./pages/User/Home.vue'], r)
+	},
+	{
+		path:'/user/wallet',
+		name:'UserWallet',
+		meta:{ title:'我的钱包' },
+		component: r => require(['./pages/User/Wallet.vue'], r)
+	},
+	{
+		path:'/user/order',
+		name:'UserOrder',
+		meta:{ title:'我的订单' },
+		component: r => require(['./pages/User/Order.vue'], r)
+	},
+	{
+		path:'/user/order/detail',
+		name:'UserOrderDetail',
+		meta:{ title:'订单详情' },
+		component: r => require(['./pages/User/OrderDetail.vue'], r)
+	},
+	{
+		path:'/user/address',
+		name:'UserAddress',
+		meta:{ title:'我的地址' },
+		component: r => require(['./pages/User/Address.vue'], r)
 	},
 	{
 		path:'*',

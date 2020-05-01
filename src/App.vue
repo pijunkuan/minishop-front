@@ -9,7 +9,7 @@
     <page-search v-if="headerType === 'search'"></page-search>
     <router-view 
         class="page-container"
-        :style="{bottom: (bottomType === 'menubar' ? 66 : 0) + 'px'}" />
+        :style="{bottom: (bottomType === 'menubar' ? 66 : 0) + 'px', top: (headerType === '' ? 0 : 49 + 'px')}" />
     <page-bottom
         v-if="bottomType === 'menubar'"
         class="page-bottom"
@@ -43,14 +43,15 @@ export default {
     watch:{
         '$route'(to){
             if(to.name === 'Search' || to.name === 'Home') this.headerType = 'search'
-                else this.headerType = 'header'
+                else if(to.name === 'UserHome') this.headerType = ''
+                    else this.headerType = 'header'
             if(to.name !== 'Product' && to.name !== 'Cart') this.bottomType = 'menubar'
                 else this.bottomType = ''
 
             if(to.name === 'Home') this.defaultIndex = 1
                 else if(to.name === 'Types') this.defaultIndex = 2
                     else if(to.name === 'Cart') this.defaultIndex = 3
-                        else if(to.name === 'Login' || to.name === 'Register' || to.name === 'Forget' || to.name === 'User') this.defaultIndex = 4
+                        else if(to.name === 'Login' || to.name === 'Register' || to.name === 'Forget' || to.name === 'UserHome') this.defaultIndex = 4
                             else this.defaultIndex = 0
         }
     }
@@ -72,7 +73,6 @@ export default {
 
 .page-container{
     position:absolute;
-    top:49px;
     left:0;
     right:0;
     background-color:$background-color;
