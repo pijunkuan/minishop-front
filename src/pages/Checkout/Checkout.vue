@@ -42,7 +42,7 @@
 	</div>
 	<div class="checkout-footer">
 		<div>
-			总计：<span>¥ <strong>{{ total_amount }}</strong></span>
+			总计：<span>¥ <strong>{{ total_amount ? total_amount : '-' }}</strong></span>
 		</div>
 		<div>
 			<shop-button :rounded="false">提交订单</shop-button>
@@ -66,6 +66,7 @@
 				items_amount:0,
 				shipments_amount:0,
 				discounts_amount:0,
+				total_amount:0,
 				height:0
 			}
 		},
@@ -125,11 +126,6 @@
 
 				}
 			]
-		},
-		computed:{
-			total_amount(){
-				return this.items_amount+this.shipments_amount-this.discounts_amount
-			}
 		}
 	}
 </script>
