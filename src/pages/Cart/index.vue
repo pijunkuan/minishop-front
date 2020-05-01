@@ -8,9 +8,12 @@
     <div class="cart-list">
         <div class="cart-list-item" v-for="(item,index) in items" :key="index">
             <shop-checkbox v-model="selected" :label="item.id"></shop-checkbox>
-            <shop-image :src="item.src" rounded type="fit" :width="80"></shop-image>
-            <div>
-                <div>{{ item.title }}</div>
+            <shop-image :src="item.src" rounded type="fit" :width="80">
+                <div class="cart-image-placeholder" slot="error"><i class="iconfont icontupian"></i></div>
+                <div class="cart-image-placeholder" slot="placeholder"><i class="iconfont icontupian"></i></div>
+            </shop-image>
+            <div class="cart-list-item__info">
+                <div class="cart-list-item__info-title">{{ item.title }}</div>
                 <div>{{ item.variant.title }}</div>
                 <div>¥ {{ item.price }}</div>
                 <div>
@@ -97,11 +100,32 @@ export default{
     margin:10px 0;
 }
 .cart-list-item{
-    padding:10px 5px;
+    padding:10px;
     border-bottom:1px solid $line-color;
 }
 .cart-list-item>div{
     display:inline-block;
     vertical-align:middle;
+}
+
+.cart-image-placeholder{
+    background-color:$line-color;
+    border-radius:5px;
+    height:80px;
+}
+.cart-image-placeholder i{
+    font-size:24px;
+    color:$disabled-color;
+}
+
+.cart-list-item__info{
+    margin-left:10px;
+    width:calc(100% - 118px);
+}
+.cart-list-item__info-title{
+    font-size:$middle-font-size;
+    line-height:$middle-font-height;
+    height:$middle-font-height * 2;
+    overflow:hidden;
 }
 </style>
