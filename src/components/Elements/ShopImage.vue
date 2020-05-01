@@ -1,22 +1,30 @@
 <template>
     <div 
         class="shop-image"
+        :style="{ height: (height ? height : width) + 'px', width: width + 'px', lineHeight: (height ? height : width) + 'px' }"
         :class="[
             type + '-image',
             {
-                'rounded':rounded
+                'is-circled':circled,
+                'is-rounded':rounded
             }
         ]">
-        <slot v-if="loading" name="placeholder">
-            <div class="shop-image__placeholder">加载中...</div>
-        </slot>
-        <slot v-else-if="error" name="error">
-            <div class="shop-image__error">加载失败...</div>
-        </slot>
+        <div v-if="loading" class="shop-image__placeholder">
+            <slot name="placeholder"></slot>
+            <template v-if="!$slots.placeholder"><span>加载中...</span></template>
+        </div>
+        <div v-else-if="error" class="shop-image__error">
+            <slot name="error"></slot>
+            <template v-if="!$slots.error"><span>加载失败</span></template>
+        </div>
         <img
             v-else
+            v-on="$listeners"
             class="shop-image__inner"
-            :src="src" />
+            :src="src"
+            :style="{
+                left: (imgWidth > width ? - (imgWidth - width) / 2 : 0) + 'px'
+            }" />
     </div>
 </template>
 
@@ -26,17 +34,21 @@
         props:{
             src:String,
             height:{
-                type:Number,
-                default:null
+                type: Number,
+                default:0
             },
             width:{
                 type:Number
             },
             type:{
                 type:String,
-                default:"square"
+                default:"default"
             },
             rounded:{
+                type:Boolean,
+                default:false
+            },
+            circled:{
                 type:Boolean,
                 default:false
             }
@@ -45,63 +57,70 @@
             return {
                 loading:true,
                 error:false,
-                show:false,
+                imgWidth:0
             }
         },
         watch:{
-            src(){
-                this.loadImage()
-            },
-            show(val){
-                val && this.loadImage()
+            src:{
+                immediate:true,
+                handler:function(){
+                    this.loadImage()
+                }
             }
         },
-        mounted(){
-            this.loadImage()
-        },
-
         methods:{
             loadImage(){
                 if(this.$isServer) return
-                this.loading=true
-                this.error=false
+                this.loading = true
+                this.error = false
 
                 const img = new Image()
-                img.onload = () => this.handleLoad()
+                img.onload = () => this.handleLoad(img)
                 img.onerror = this.handleError.bind(this)
 
                 img.src = this.src
-
             },
-            handleLoad() {
+            handleLoad(img) {
+                this.imgWidth = img.width
                 this.loading = false
             },
             handleError(e) {
                 this.loading = false
                 this.error = true
                 this.$emit('error', e)
-            },
+            }
         }
     }
 </script>
 
 <style lang="scss" scoped>
 @import "@/assets/style/base.scss";
-.shop-image__inner{
-    max-width:100%;
-    max-height:100%;
-}
 .shop-image{
     text-align: center;
+    overflow:hidden;
 }
+
+.shop-image.fit-image img{
+    max-width:100%;
+}
+.shop-image.stretch-image img{
+    width:100%;
+    height:100%;
+}
+.shop-image.center-image img{
+    position:relative;
+}
+
 .shop-image__placeholder,.shop-image__error{
     color:$other-font-color;
-}
-.round-image{
-    display: inline-block;
-    overflow: hidden;
-    border-radius: 50%;
+    font-size:$middle-font-size;
+    background-color:#fff;
 }
 
-
+.shop-image.is-circled img{
+    border-radius:50%;
+}
+.shop-image.is-rounded img{
+    border-radius:5px;
+}
 </style>

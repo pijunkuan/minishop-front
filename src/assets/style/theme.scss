@@ -7,13 +7,13 @@ $summer-theme : (
 	block-color: #ffbe31
 );
 
-// 主题2：红红火火
-$hotred-theme : (
-	base-color: #d90b1f,
+// 主题2：清爽
+$water-theme : (
+	base-color: #06aeff,
 	price-color: #ff564c,
 	sale-color: #ff564c,
 	element-color: #06aeff,
-	block-color: #d90b1f
+	block-color: #06aeff
 );
 
 // 主题3：春日绿
@@ -30,7 +30,7 @@ $forest-theme : (
 	base-color: #609544,
 	price-color: #f23e27,
 	sale-color: #f23e27,
-	element-color: #b6e78e,
+	element-color: #609544,
 	block-color: #b6e78e
 );
 
@@ -39,14 +39,14 @@ $purple-theme : (
 	base-color: #3335ac,
 	price-color: #f05c12,
 	sale-color: #f05c12,
-	element-color: #6d8ac6,
+	element-color: #3335ac,
 	block-color: #6d8ac6
 );
 
 //定义映射集合
 $themes: (
 	summer-theme: $summer-theme,
-	hotred-theme: $hotred-theme,
+	water-theme: $water-theme,
 	spring-theme: $spring-theme,
 	forest-theme: $forest-theme,
 	purple-theme: $purple-theme

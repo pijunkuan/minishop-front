@@ -66,15 +66,14 @@ export default {
 }
 
 .large-button{
-    max-width:325px;
     width:100%;
     height:44px;
-    font-size:$large-font-size;
+    font-size:$normal-font-size;
 }
 .medium-button{
     width:115px;
     height:44px;
-    font-size:$large-font-size;
+    font-size:$middle-font-size;
 }
 .small-button{
     width:80px;

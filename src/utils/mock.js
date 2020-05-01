@@ -4,7 +4,7 @@ const theme = Mock.mock('/theme','get',()=>{
 	return {
 		code:200,
 		data:{
-			theme:'hotred'
+			theme:'purple'
 		}
 	}
 })

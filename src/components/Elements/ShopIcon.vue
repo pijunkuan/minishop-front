@@ -1,4 +1,3 @@
-
 <template>
 <div 
 	class="shop-icon"
@@ -12,7 +11,7 @@
 	]">
 	<i 
 		class="iconfont"
-		:class="'icon-'+name"
+		:class="'icon'+name"
 	></i>
 </div>
 </template>
@@ -44,6 +43,7 @@
 
 <style lang="scss" scoped>
 	.shop-icon{
+		display:inline-block;
 		text-align:center;
 		border-width:1px;
 		border-style:solid;
@@ -67,20 +67,20 @@
 		font-size:47px;
 	}
 	.medium-icon{
-		width:50px;
-		height:50px;
-		line-height:50px;
+		width:40px;
+		height:40px;
+		line-height:40px;
 	}
 	.medium-icon i{
-		font-size:40px;
+		font-size:30px;
 	}
 	.small-icon{
-		width:37px;
-		height:37px;
-		line-height:37px;
+		width:26px;
+		height:26px;
+		line-height:26px;
 	}
 	.small-icon i{
-		font-size: 28px;
+		font-size: 24px;
 	}
 
 	.mini-icon{
