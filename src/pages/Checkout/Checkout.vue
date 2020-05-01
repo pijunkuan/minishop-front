@@ -22,6 +22,12 @@
 			</div>
 			<div v-else class="checkout-address-info">请选择地址</div>
 		</div>
+		<div v-if="address">
+			<p style="font-size:5px;text-align: center;color:darkblue"> + + + 更换地址 + + + </p>
+		</div>
+		<div>
+			<shop-input v-model="remark" style="margin-bottom:10px;padding:2px;" size="small" placeholder="给我们留言" :rounded="false"></shop-input>
+		</div>
 		<div class="checkout-item-list">
 			<div class="checkout-item-list-item" v-for="(item,index) in items" :key="index">
 				<div>
@@ -35,19 +41,38 @@
 				</div>
 			</div>
 		</div>
-		<div>
-			<div>运   费：¥ {{ shipments_amount }}</div>
-			<div>商品总计：¥ {{ items_amount }}</div>
-		</div>
+		
 	</div>
 	<div class="checkout-footer">
 		<div>
-			总计：<span>¥ <strong>{{ total_amount ? total_amount : '-' }}</strong></span>
+			总计：<span>¥ <strong>{{ total_amount ? total_amount : '-' }}</strong></span><span @click="showDetail"> 明细</span>
 		</div>
 		<div>
 			<shop-button :rounded="false">提交订单</shop-button>
 		</div>
 	</div>
+	<shop-popup size="medium" type="bottom" :show="detail" @close="detail=false">
+		<div slot="title">价格明细</div>
+		<div  slot="content">
+			<div class="detail-info">
+				<div>
+					<div>商品费用：</div>
+					<div>¥ <strong>{{items_amount}}</strong></div>
+				</div>
+				<div>
+					<div>运输费用：</div>
+					<div>¥ <strong>{{shipments_amount}}</strong></div>
+				</div>
+				<div>
+					<div>优惠费用：</div>
+					<div>¥ <strong>{{discounts_amount}}</strong></div>
+				</div>
+			</div>
+		</div>
+		<div slot="button">
+			<shop-button @click="detail=false">关闭</shop-button>
+		</div>
+	</shop-popup>
 </div>
 </template>
 
@@ -66,8 +91,15 @@
 				items_amount:0,
 				shipments_amount:0,
 				discounts_amount:0,
-				total_amount:0,
-				height:0
+				total_amount:999,
+				height:0,
+				remark:"",
+				detail:false,
+			}
+		},
+		methods:{
+			showDetail(){
+				this.detail = true
 			}
 		},
 		mounted(){
@@ -233,5 +265,22 @@
 }
 .checkout-footer>div:first-child span strong{
 	font-size:$large-font-size;
+}
+.detail-info>div{
+	font-size:$normal-font-size;
+	color:$sub-font-color;
+}
+.detail-info>div>div{
+	display:inline-block;
+}
+.detail-info>div>div:first-child{
+	width:80px;
+}
+.detail-info>div>div:last-child{
+	@include price-color(1);
+	font-size:$small-font-size;
+}
+.detail-info>div>div:last-child strong{
+	font-size: $normal-font-size
 }
 </style>
