@@ -77,7 +77,6 @@
                 const img = new Image()
                 img.onload = () => this.handleLoad(img)
                 img.onerror = this.handleError.bind(this)
-
                 img.src = this.src
             },
             handleLoad(img) {
@@ -107,6 +106,7 @@
     width:100%;
     height:100%;
 }
+
 .shop-image.center-image img{
     position:relative;
 }
