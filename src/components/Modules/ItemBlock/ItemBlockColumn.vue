@@ -83,7 +83,7 @@ export default{
 .item-block-2__content-title{
     font-size:$middle-font-size;
     line-height:$middle-font-height;
-    height:$middle-font-height * 2;
+    max-height:$middle-font-height * 2;
     overflow:hidden;
     word-break:break-all;
     color:$main-font-color;

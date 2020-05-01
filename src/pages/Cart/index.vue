@@ -14,7 +14,7 @@
             </shop-image>
             <div class="cart-list-item__info">
                 <div class="cart-list-item__info-title">{{ item.title }}</div>
-                <div>{{ item.variant.title }}</div>
+                <div class="cart-list-item__info-subtitle"><div>{{ item.variant.title }}</div></div>
                 <div>¥ {{ item.price }}</div>
                 <div>
                     <shop-input-num
@@ -125,7 +125,20 @@ export default{
 .cart-list-item__info-title{
     font-size:$middle-font-size;
     line-height:$middle-font-height;
-    height:$middle-font-height * 2;
+    max-height:$middle-font-height * 2;
     overflow:hidden;
+    color:$main-font-color;
+    margin-bottom:5px;
+}
+.cart-list-item__info-subtitle{
+    font-size:$small-font-size;
+    line-height:$small-font-height;
+    height:$small-font-height;
+    overflow:hidden;
+    display:inline-block;
+    padding:3px 7px;
+    background-color:$line-color;
+    border-radius:3px;
+    color:$sub-font-color;
 }
 </style>

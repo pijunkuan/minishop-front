@@ -96,7 +96,7 @@ export default{
     margin-bottom:5px;
     font-size:$middle-font-size;
     line-height:$middle-font-height;
-    height:$middle-font-height * 2;
+    max-height:$middle-font-height * 2;
     overflow:hidden;
     white-space:initial;
     color:$main-font-color;

@@ -215,14 +215,14 @@ export default{
     font-weight:500;
     color:$main-font-color;
     line-height:$normal-font-height;
-    height:$normal-font-height * 2;
+    max-height:$normal-font-height * 2;
     overflow:hidden;
 }
 .product-detail-desc{
     font-size:$small-font-size;
     color:$other-font-color;
     line-height:$small-font-height;
-    height:$small-font-height * 2;
+    max-height:$small-font-height * 2;
     overflow:hidden;
 }
 

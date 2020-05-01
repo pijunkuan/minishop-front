@@ -133,7 +133,7 @@ export default{
 .item-block-1-item__title{
     font-size:$small-font-size;
     line-height:$small-font-height;
-    height:$small-font-height * 2;
+    max-height:$small-font-height * 2;
     overflow:hidden;
     color:$main-font-color;
 }

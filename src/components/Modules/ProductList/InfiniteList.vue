@@ -108,7 +108,7 @@ export default{
 .infinite-shop-content__title{
     font-size:$middle-font-size;
     line-height:$middle-font-height;
-    height:$middle-font-height * 2;
+    max-height:$middle-font-height * 2;
     overflow:hidden;
     word-break:break-all;
     color:$main-font-color;
