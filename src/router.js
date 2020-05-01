@@ -77,23 +77,21 @@ export const routes = [
 	},
 	{
 		path:'/checkout',
-		children:[
-			{ 
-				path:'index', 
-				name:'Checkout', 
-				component: r => require(['./pages/Checkout/Checkout.vue'], r) 
-			},
-			{ 
-				path:'pay', 
-				name:'Checkpay',
-				component: r => require(['./pages/Checkout/Checkpay.vue'], r)
-			},
-			{
-				path:'suc',
-				name:'Checksuc',
-				component: r => require(['./pages/Checkout/Checksuc.vue'], r)
-			}
-		]
+		name:'Checkout',
+		meta:{ title:'确认订单' },
+		component: r => require(['./pages/Checkout/Checkout.vue'], r)
+	},
+	{
+		path:'/checkpay',
+		name:'Checkpay',
+		meta:{ title:'支付订单' },
+		component: r => require(['./pages/Checkout/Checkpay.vue'], r)
+	},
+	{
+		path:'/checksuc',
+		name:'Checksuc',
+		meta:{ title:'提交成功' },
+		component: r => require(['./pages/Checkout/Checksuc.vue'], r)
 	},
 	{
 		path:'/user',

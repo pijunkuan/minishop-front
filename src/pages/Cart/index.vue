@@ -28,6 +28,12 @@
             </div>
         </div>
     </div>
+    <div class="cart-footer">
+        <div>
+            总计：<span>¥ <strong>{{ total }}</strong></span>
+        </div>
+        <div class="cart-footer-button"><shop-button size="medium">确认订单</shop-button></div>
+    </div>
 </div>
 </template>
 
@@ -48,6 +54,12 @@ export default{
     },
     created(){
         this.getItems()
+    },
+    computed:{
+        total(){
+            let amount = 1
+            return amount
+        }
     },
     methods:{
         getItems(){
@@ -140,5 +152,28 @@ export default{
     background-color:$line-color;
     border-radius:3px;
     color:$sub-font-color;
+}
+.cart-footer{
+    position:fixed;
+    display:flex;
+    height:44px;
+    bottom:0;
+    right:0;
+    left:0;
+    padding:0 10px;
+    background-color:#fff;
+    border-top:1px solid $line-color;
+    box-shadow: 0 -1px 5px 2px rgba(0,0,0,0.1);
+}
+.cart-footer>div{
+    flex:1;
+}
+.cart-footer .cart-footer-button{
+    text-align:right;
+}
+.cart-footer .cart-footer-button button{
+    margin-top:4px;
+    height:35px;
+    border-radius:25px;
 }
 </style>
