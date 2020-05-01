@@ -45,7 +45,7 @@ export default {
             if(to.name === 'Search' || to.name === 'Home') this.headerType = 'search'
                 else if(to.name === 'UserHome') this.headerType = ''
                     else this.headerType = 'header'
-            if(to.name !== 'Product' && to.name !== 'Cart') this.bottomType = 'menubar'
+            if(to.name !== 'Product' && to.name !== 'Cart' && to.name !== 'Checkout') this.bottomType = 'menubar'
                 else this.bottomType = ''
 
             if(to.name === 'Home') this.defaultIndex = 1
