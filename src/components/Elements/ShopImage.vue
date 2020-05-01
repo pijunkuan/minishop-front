@@ -9,11 +9,11 @@
                 'is-rounded':rounded
             }
         ]">
-        <div v-if="loading" class="shop-image__placeholder">
+        <div v-if="loading" class="shop-image__placeholder" :style="{lineHeight:(height ? height : width) + 'px',height: (height ? height : width) + 'px'}">
             <slot name="placeholder"></slot>
             <template v-if="!$slots.placeholder"><span>加载中...</span></template>
         </div>
-        <div v-else-if="error" class="shop-image__error">
+        <div v-else-if="error" class="shop-image__error" :style="{lineHeight:(height ? height : width) + 'px',height: (height ? height : width) + 'px'}">
             <slot name="error"></slot>
             <template v-if="!$slots.error"><span>加载失败</span></template>
         </div>
@@ -122,5 +122,9 @@
 }
 .shop-image.is-rounded img{
     border-radius:5px;
+}
+
+.shop-image.is-circled .shop-image__placeholder,.shop-image.is-circled .shop-image__error{
+    border-radius:50%;
 }
 </style>
