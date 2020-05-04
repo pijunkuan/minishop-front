@@ -1,4 +1,7 @@
+const defaultSettings = require('./src/settings.js')
+
 const path = require('path')
+const webname = defaultSettings.title || "minishop-default"
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -16,6 +19,7 @@ module.exports = {
     }
   },
 	configureWebpack: {
+    name:webname,
     resolve: {
      		alias: {
        		'@': resolve('src')

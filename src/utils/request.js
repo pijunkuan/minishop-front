@@ -5,9 +5,10 @@
 import axios from 'axios'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import defaultSetting from '@/settings'
 
 const service = axios.create({
-	baseURL:'http://test.tvbeu.info/api/'
+	baseURL:defaultSetting.apiURL
 })
 
 service.interceptors.request.use(

@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-import './utils/theme.js'
+import './utils/setting.js'
 
 import index from '@/components/index'
 Vue.use(index)

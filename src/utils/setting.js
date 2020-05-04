@@ -3,8 +3,10 @@
  */
 import router from '@/router'
 import store from '@/store'
+import defaultSettings from '@/settings'
 
 router.beforeEach((to, from, next) => {
+	document.title = defaultSettings.title
 	store.dispatch('setTheme')
 	next()
 })
