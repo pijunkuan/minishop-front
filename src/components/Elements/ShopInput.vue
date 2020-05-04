@@ -242,7 +242,7 @@ export default{
     margin-left:10px;
 }
 .shop-input.is-prepend.is-append{
-    width:calc(100% - 96px);
+    width:calc(100% - 110px);
     margin-left:10px;
     margin-right:0;
 }

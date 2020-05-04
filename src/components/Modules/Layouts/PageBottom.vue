@@ -86,7 +86,7 @@ export default{
     position:absolute;
     margin-left:28px;
     width:24px;
-    height:20px;
+    height:18px;
     line-height:18px;
     font-size:$small-font-size;
     color:#fff;
