@@ -22,13 +22,16 @@
         :loading="colLoading"
         :items="colItems"></item-block-column>
     <item-block-mono
+        v-if="ad1"
         class="page-block"
         :item="ad1"
         :loading="adLoading1"></item-block-mono>
     <img-txt-horizon
+        v-if="scrollMenu.length !== 0"
         type="totaltext"
         :items="scrollMenu"
         :loading="menuLoading"></img-txt-horizon>
+    <div class="text-title">你可能会喜欢</div>
     <infinite-list
         :loading="infLoading"
         :nomore="noresult"
@@ -46,6 +49,7 @@ import ItemBlockColumn from '@/components/Modules/ItemBlock/ItemBlockColumn'
 import ItemBlockMono from '@/components/Modules/ItemBlock/ItemBlockMono'
 import ImgTxtHorizon from '@/components/Modules/ImgTxtBlock/ImgTxtHorizon'
 import InfiniteList from '@/components/Modules/ProductList/InfiniteList'
+import { get_products } from '@/api/products'
 export default{
     components:{
         ImgCarousel,
@@ -66,29 +70,24 @@ export default{
                 { src:'', title:'更多', color:'#F56C6C' }
             ],
             innerWidth:0,
-            message:'好消息：最新开通香港直邮，更多海外优品精选上架，新品更有大优惠',
+            message:'',
             limitLoading:false,
-            limitItems:[{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', price:20 },{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', price:20 }],
+            limitItems:[],
             colLoading:false,
-            colItems:[{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', price:20,subTitle:'393' },{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', price:20,subTitle:'393' }],
-            ad1:{
-                src:'',
-                title:'最新到货小甘菊',
-                subTitle:'开箱有礼',
-                price:20
-            },
+            colItems:[],
+            ad1:null,
             adLoading1:false,
-            scrollMenu:[
-                { title:'美妆护肤'},
-                { title:'婴儿幼童'},
-                { title:'身体护理'},
-                { title:'洗发护发'}
-            ],
+            scrollMenu:[],
             menuLoading:false,
             height:0,
             infLoading:false,
             noresult:false,
-            infItems:[]
+            infItems:[],
+            fetchQuery:{
+                page:0,
+                Q4S:1,
+                pageSize:15
+            }
         }
     },
     mounted(){
@@ -100,11 +99,11 @@ export default{
     },
     methods:{
         getItems(){
-            setTimeout(()=>{
-                let _data = []
-                for(let i = 0; i<= 10; i++){
-                    _data.push(i)
-                }
+            this.infLoading = true
+            this.noresult = false
+            this.fetchQuery.page += 1
+            get_products(this.fetchQuery).then(r=>{
+                let _data = r.data.body.data
                 if(_data.length === 0){
                     this.infLoading = true
                     this.noresult = true
@@ -113,7 +112,10 @@ export default{
                     this.noresult = false
                     this.infItems = this.infItems.concat(_data)
                 }
-            },1000)
+            }).catch(()=>{
+                this.infLoading = true
+                this.noresult = true
+            })
         }
     }
 }
@@ -143,5 +145,12 @@ export default{
     height:60px;
     background-color:#000;
     border-radius:50%;
+}
+.text-title{
+    padding:0 10px;
+    line-height:40px;
+    background-color:#fff;
+    font-size:$middle-font-size;
+    color:$main-font-color;
 }
 </style>

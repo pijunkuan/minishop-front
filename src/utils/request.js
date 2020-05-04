@@ -7,13 +7,13 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 
 const service = axios.create({
-	baseURL:'http://localhost:8080'
+	baseURL:'http://test.tvbeu.info/api/'
 })
 
 service.interceptors.request.use(
 	config => {
 		if(store.getters.token){
-			config.headers['X-Token'] = getToken()
+			config.headers['Authorization'] = 'Bearer ' + getToken()
 		}
 		return config
 	},

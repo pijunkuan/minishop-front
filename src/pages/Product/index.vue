@@ -2,7 +2,9 @@
 <div>
     <div class="product-container">
         <page-loading :loading="loading"></page-loading>
+        <div v-if="noStock" class="item-soldout" :style="{marginTop:(width - 200) / 2 + 'px'}"><div>已抢光</div></div>
         <img-carousel
+            type="stretch"
             :height="width"
             :indicator="false"
             :images="item.images">
@@ -11,30 +13,37 @@
             </div>
         </img-carousel>
         <div class="product-detail">
-            <div class="product-detail-title">{{ item.title }}</div>
-            <div class="product-detail-desc" v-if="item.desc">{{ item.desc }}</div>
+            <div class="product-detail-title">{{ item.product.product_title }}</div>
+            <div class="product-detail-desc" v-if="item.desc">{{ item.product.product_desc }}</div>
             <div>
-                <div class="product-detail-price">
-                    <span class="product-detail-price__price">¥ <strong>{{ item.price ? item.price : '-' }}</strong></span>
-                    <span class="product-detail-price__oriprice" v-if="item.oriprice">¥ {{ item.oriprice }}</span>
+                <div class="product-detail-price" v-if="loading">
+                    <span class="product-detail-price__price">¥ <strong>-</strong></span>
+                </div>
+                <div class="product-detail-price" v-if="item.variants.length === 1">
+                    <span class="product-detail-price__price">¥ <strong>{{ item.variants[0].price !== undefined ? item.variants[0].price : '-' }}</strong></span>
+                    <span class="product-detail-price__oriprice" v-if="item.variants[0].ori_price">¥ {{ item.variants[0].ori_price }}</span>
+                </div>
+                <div class="product-detail-price" v-if="item.variants.length > 1">
+                    <span class="product-detail-price__price">¥ <strong>{{ item.variants[0].price + '-' + item.variants[item.variants.length - 1].price }}</strong></span>
                 </div>
             </div>
-            <div class="product-detail-sale">{{ item.sale }}人已购买</div>
+            <!-- <div class="product-detail-sale">{{ item.sale }}人已购买</div> -->
         </div>
         <div class="product-content" style="margin-bottom:0">
             <div class="product-content-title">商品详情</div>
             <div class="product-content-content">
                 <div v-if="item.content">{{ item.content }}</div>
-                <div style="height:100px"></div>
             </div>
         </div>
     </div>
     <div class="product-footer">
+        <div class="product-footer-icon" @click="$router.push({name:'Home'})">
+            <div><shop-icon name="shouye" size="small" class="product-footer-icon__icon"></shop-icon></div>
+            <div>首页</div>
+        </div>
         <div class="product-footer-icon" @click="shareShow = true">
-            <div>
-                <shop-icon name="fenxiang" size="small" class="product-footer-icon__icon"></shop-icon>
-                分享
-            </div>
+            <div><shop-icon name="fenxiang" size="small" class="product-footer-icon__icon"></shop-icon></div>
+            <div>分享</div>
         </div>
         <div class="product-footer-button">
             <shop-button type="border" :rounded="false" @click="toAdd('direct')">立即购买</shop-button>
@@ -55,10 +64,13 @@
     <shop-popup :show="variantShow" @close="closeVariant">
         <div slot="content">
             <div style="margin-bottom:20px">
-                <shop-image class="pop-item-image" :src="item.src" :width="100" rounded type="fit">
+                <shop-image class="pop-item-image" :src="item.images[0]" :width="100" rounded type="stretch">
                     <div class="product-image-error" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
-                <div class="pop-item-title">{{ item.title }}</div>
+                <div class="pop-item-title">
+                    <div>{{ item.product.product_title }}</div>
+                    <div class="pop-item-title__price">¥ <strong>{{ selectVariant.id === undefined ? '' : selectVariant.price }}</strong></div>
+                </div>
             </div>
             <div class="pop-item-content">
                 <div class="pop-item-content__title">选择规格</div>
@@ -71,7 +83,7 @@
                             v-model="selectId" 
                             :label="variable.id" 
                             @change="changeVariant(index)">
-                            {{ variable.title }}
+                            {{ variable.variant_title }}
                         </shop-radio>
                     </div>
                 </div>
@@ -103,7 +115,9 @@
 </template>
 
 <script>
-import { Toast } from 'mint-ui'
+import { get_product } from '@/api/products'
+import { add_cart, create_cart_cache } from '@/api/cart'
+import { Toast, MessageBox } from 'mint-ui'
 import ImgCarousel from '@/components/Modules/ImgTxtBlock/ImgCarousel'
 export default{
     components:{
@@ -114,9 +128,13 @@ export default{
             loading:false,
             width:0,
             item:{
-                images:[]
+                images:[],
+                product:{},
+                variants:[]
             },
+            noStock:false,
             shareShow:false,
+            addType:'',
             variantShow:false,
             selectVariant:{},
             selectId:null,
@@ -132,37 +150,46 @@ export default{
     created(){
         this.getDetail()
     },
+    beforeRouteLeave(to,from,next){
+        if(to.name === 'Types' || to.name === 'Search') to.meta.keepAlive = true
+            else to.meta.keepAlive = false
+        next()
+    },
     methods:{
         getDetail(){
             this.loading = true
-            setTimeout(()=>{
-                this.item = {
-                    images:[],
-                    title:'测试商品',
-                    desc:'香港直邮，正品保证',
-                    price:200,
-                    oriprice:150,
-                    sale:20,
-                    variants:[{ id:1,title:'test', stock:20, limit:10 },{ id:2,title:'test2', stock:10, limit:null }]
+            get_product(this.$route.query.id).then(r=>{
+                let _data = r.data.body
+                _data.variants.sort((a,b)=>{
+                    b.price * 1 - a.price * 1
+                })
+                let _stock = 0
+                _data.variants.map(v=>{
+                    _stock += v.stock
+                })
+                if(_stock) this.noStock = false
+                    else this.noStock = true
+                if(_data.images.length !== 0){
+                    _data.images.map(v=>{
+                        this.item.images.push(v.url)
+                    })
                 }
+                this.item.product = _data.product
+                this.item.variants = _data.variants
                 this.loading = false
-            },1000)
+            }).catch(()=>{
+                this.loading = false
+            })
         },
         toAdd(type){
-            if(this.item.variants.length > 1){
-                this.variantShow = true
-                this.selectVariant = this.item.variants[0]
-                this.selectId = this.selectVariant.id
-                return
-            }
             if(this.item.variants[0].stock < 1){
                 Toast('库存不足，逛逛别的吧')
                 return
             }
-            setTimeout(()=>{
-                Toast('成功加入购物车')
-                if(type === 'direct') this.$router.push({name:'Checkout'})
-            },1000)
+            this.addType = type
+            this.variantShow = true
+            this.selectVariant = this.item.variants[0]
+            this.selectId = this.selectVariant.id
         },
         changeVariant(index){
             this.selectVariant = this.item.variants[index]
@@ -179,12 +206,64 @@ export default{
             this.selectId = null
         },
         confirmAdd(){
-
+            let _data = {
+                variant_id:this.selectVariant.id,
+                quantity:this.selectNum
+            }
+            if(this.addType === 'direct'){
+                let _order = {
+                    address:{},
+                    items:[]
+                }
+                _order.items.push(_data)
+                create_cart_cache(_order).then(r=>{
+                    this.$router.push({name:'Checkout',query:{key:r.data.body.key}})
+                }).catch(e=>{
+                    if(e.response.status === 401) this.loginMsg()
+                        else Toast(e.response.data.message)
+                })
+            }else{
+                add_cart(_data).then(()=>{
+                    Toast({
+                        message:'添加成功',
+                        duration:500
+                    })
+                    this.closeVariant()
+                }).catch(e=>{
+                    if(e.response.status === 401) this.loginMsg()
+                        else Toast(e.response.data.message)
+                })
+            }
+        },
+        loginMsg(){
+            MessageBox({
+                title:'提示',
+                message:'请登录后加入购物车',
+                confirmButtonText:'现在登录',
+                showCancelButton:true,
+                cancelButtonText:'再逛逛'
+            }).then(action=>{
+                if(action === 'cancel'){
+                    this.closeVariant()
+                }else{
+                    this.$router.push({name:'Login',query:{from:this.$route.name,type:'id',query:this.$route.query.id}})
+                }
+            })
         }
     }
 }
 </script>
 
+<style>
+.product-footer-icon__icon.small-icon{
+    width:24px;
+    height:24px;
+    line-height:24px;
+}
+.product-footer-icon__icon.small-icon i{
+    font-size:18px;
+}
+</style>
 <style lang="scss" scoped>
 @import '@/assets/style/base.scss';
 .product-container{
@@ -259,16 +338,11 @@ export default{
     vertical-align:middle;
 }
 .product-footer-icon{
-    flex:1.5;
-    line-height:44px;
+    flex:1;
     text-align:center;
     border-top:1px solid $line-color;
-    font-size:$normal-font-size;
+    font-size:$small-font-size;
     color:$sub-font-color;
-}
-.product-footer-icon__icon{
-    position:relative;
-    top:2px;
 }
 .product-footer-button{
     flex:2;
@@ -329,5 +403,42 @@ export default{
 .pop-item-content-quantity>div:last-child{
     width:calc(100% - 80px);
     text-align:right;
+}
+
+.pop-item-title__price{
+    margin-top:5px;
+    font-size:$small-font-size;
+    @include price-color(1);
+}
+.pop-item-title__price strong{
+    font-size:$normal-font-size;
+}
+
+.product-content-content{
+    min-height:20px;
+}
+
+.item-soldout{
+    position:absolute;
+    width:200px;
+    height:200px;
+    margin-left:-100px;
+    left:50%;
+    line-height:200px;
+    text-align:center;
+    background-color:rgba(0,0,0,0.4);
+    color:#fff;
+    font-size:$normal-font-size;
+    z-index:2;
+    border-radius:50%;
+}
+.item-soldout>div{
+    width:170px;
+    height:170px;
+    margin-left:15px;
+    margin-top:15px;
+    line-height:170px;
+    background-color:rgba(0,0,0,0.6);
+    border-radius:50%;
 }
 </style>

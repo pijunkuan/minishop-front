@@ -78,7 +78,7 @@ export default {
 .small-button{
     width:80px;
     height:25px;
-    font-size:$middle-font-size;
+    font-size:$small-font-size;
 }
 
 .border-button{

@@ -1,6 +1,5 @@
 <template>
 <div class="login-background">
-    <page-loading :loading="loading"></page-loading>
     <div class="login-form">
         <shop-image class="login-form-avatar" :width="80" circled>
             <div slot="placeholder">
@@ -10,7 +9,7 @@
                 <shop-icon style="background-color:#fff" name="iconzhucetouxiang"></shop-icon>
             </div>
         </shop-image>
-        <shop-input ref="username" class="login-form-input" v-model="user.username" validate :rules="rules.username" placeholder="请输入邮箱或手机号">
+        <shop-input ref="mobile" class="login-form-input" v-model="user.mobile" validate :rules="rules.mobile" placeholder="请输入手机号">
             <span slot="prepend" class="login-prepend">登录名</span>
         </shop-input>
         <shop-input ref="password" class="login-form-input" v-model="user.password" :type="passType" validate :rules="rules.password">
@@ -22,7 +21,7 @@
                 <shop-icon v-if="passType === 'text'" name="yanjing" size="mini"></shop-icon>
             </span>
         </shop-input>
-        <shop-button class="login-form-button" @click="confirmLogin">登 录</shop-button>
+        <shop-button class="login-form-button" :class="{'is-loading':btnLoading}" @click="confirmLogin">登 录</shop-button>
         <div class="login-form-bottom">
             <div>还没有账号？<div class="bottom-btn" @click="toRegister">注册</div></div>
             <!-- <div class="bottom-btn" @click="toForget">找回密码</div> -->
@@ -37,29 +36,21 @@ export default{
     data(){
         return{
             user:{
-                username:'',
+                mobile:'',
                 password:''
             },
             passType:'password',
             rules:{
-                username:[
-                    { required:true, message:'请输入用户名' }
+                mobile:[
+                    { required:true, message:'请输入手机号' }
                 ],
                 password:[
                     { required:true, message:'请输入密码' },
                     { min:6, message:'密码至少为6位' }
                 ]
             },
-            loading:false
+            btnLoading:false
         }
-    },
-    created(){
-        setTimeout(()=>{
-            this.loading = true
-        },500)
-        setTimeout(()=>{
-            this.loading = false
-        },2000)
     },
     methods:{
         toRegister(){
@@ -69,19 +60,44 @@ export default{
             this.$router.push({name:'Forget'})
         },
         confirmLogin(){
-            this.$refs.username.validation((valid)=>{
+            if(this.btnLoading) return
+            this.$refs.mobile.validation((valid)=>{
                 if(valid){
                     this.$refs.password.validation((validate)=>{
                         if(validate){
-                            Toast('登录成功')
-                            setTimeout(()=>{
-                                this.$refs.username.clearValidate()
-                                this.$refs.password.clearValidate()
-                            },500)
+                            this.btnLoading = true
+                            this.$store.dispatch('login',this.user).then(()=>{
+                                Toast('登录成功')
+                                setTimeout(()=>{
+                                    this.afterLogin()
+                                    this.btnLoading = false
+                                },1000)
+                            }).catch(e=>{
+                                Toast({
+                                    message: e.response.data.message,
+                                    duration:2000
+                                })
+                                this.btnLoading = false
+                            })
                         }
                     })
                 }
             })
+        },
+        afterLogin(){
+            this.$refs.mobile.clearValidate()
+            this.$refs.password.clearValidate()
+            if(this.$route.query.from !== undefined){
+                if(this.$route.query.type !== undefined){
+                    let _query = {}
+                    _query[this.$route.query.type] = this.$route.query.query
+                    this.$router.push({name:this.$route.query.from, query:_query})
+                }else{
+                    this.$router.push({name:this.$route.query.from})
+                }
+            }else{
+                this.$router.push({name:'UserHome'})
+            }
         }
     }
 }
@@ -117,6 +133,11 @@ export default{
 }
 .login-form-button{
     margin-top:20px;
+    opacity:1;
+}
+.login-form-button.is-loading{
+    transition:opacity .2s ease-in;
+    opacity:0.8;
 }
 
 .login-form-bottom{

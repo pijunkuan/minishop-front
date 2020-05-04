@@ -182,8 +182,8 @@ export default{
 }
 
 .shop-popup.full-cover .shop-popup-content{
-    height:100%;
-    widht:100%;
+    height:100%!important;
+    width:100%!important;
 }
 
 .shop-popup-cover-enter-active,.shop-popup-cover-leave-active{

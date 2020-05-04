@@ -15,6 +15,7 @@
         <div class="shop-bottom-item__text">分类</div>
     </div>
     <div class="shop-bottom-item" @click="changeMenu(3)">
+        <div class="shop-bottom-item-badge">{{ $store.getters.cart >= 10 ? '9+' : $store.getters.cart }}</div>
         <shop-icon
             size="small"
             :name="defaultIndex === 3 ? '20gouwuchefill' : 'shiwu-gouwuche'">
@@ -32,16 +33,27 @@
 </template>
 
 <script>
+import { getToken } from '@/utils/auth'
+import { Toast } from 'mint-ui'
 export default{
     props:{
         defaultIndex:Number
+    },
+    created(){
+        if(getToken()) this.$store.dispatch('getCart')
     },
     methods:{
         changeMenu(index){
             if(index === 1 && this.$route.name !== 'Home') this.$router.push({name:'Home'})
             if(index === 2 && this.$route.name !== 'Types') this.$router.push({name:'Types'})
-            if(index === 3 && this.$route.name !== 'Cart') this.$router.push({name:'Cart'})
-            if(index === 4 && this.$route.name !== 'UserHome') this.$router.push({name:'UserHome'})
+            if(index === 3 && this.$route.name !== 'Cart') {
+                if(getToken()) this.$router.push({name:'Cart'})
+                    else Toast('请先登录')
+            }
+            if(index === 4){
+                if(this.$store.getters.token && this.$route.name !== 'UserHome') this.$router.push({name:'UserHome'})
+                    else if(!this.$store.getters.token && this.$route.name !== 'Login') this.$router.push({name:'Login',query:{from:this.$route.name}})
+            }
         }
     }
 }
@@ -69,5 +81,16 @@ export default{
 .shop-bottom-item__text{
     font-size:$middle-font-size;
     color:$main-font-color;
+}
+.shop-bottom-item-badge{
+    position:absolute;
+    margin-left:28px;
+    width:24px;
+    height:20px;
+    line-height:18px;
+    font-size:$small-font-size;
+    color:#fff;
+    border-radius:25px;
+    @include sale-background(1);
 }
 </style>

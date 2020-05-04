@@ -41,7 +41,7 @@ export default{
             this.visible = false
         },
         getSearch(){
-            console.log(this.search)
+            this.$router.replace({name:'Search', query:{ search: this.search }}).catch(()=>{})
         }
     }
 }

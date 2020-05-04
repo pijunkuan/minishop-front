@@ -5,24 +5,28 @@
         <shop-checkbox v-model="selectAll" @change="checkAll">全选</shop-checkbox>
         <div @click="toEdit">{{ isEdit ? '取消' : '编辑' }}</div>
     </div>
-    <div class="cart-list" :style="{height:height + 'px'}">
+    <div v-if="!loading && items.length === 0" class="cart-placeholder">
+        <div>暂无商品</div>
+        <div class="cart-placeholder-button" @click="toProducts"><span>去逛逛</span></div>
+    </div>
+    <div v-else class="cart-list" :style="{height:height + 'px'}">
         <div class="cart-list-items">
             <div class="cart-list-item" v-for="(item,index) in items" :key="index">
-                <shop-checkbox v-model="selected" :label="item.id" @change="changeSelect(item)"></shop-checkbox>
-                <shop-image :src="item.src" rounded type="fit" :width="80">
+                <shop-checkbox v-model="selected" :label="item.id" :disabled="!item.visibility" @change="changeSelect(item)"></shop-checkbox>
+                <shop-image :src="item.img_url" rounded type="stretch" :width="80">
                     <div class="cart-image-placeholder" slot="error"><i class="iconfont icontupian"></i></div>
                     <div class="cart-image-placeholder" slot="placeholder"><i class="iconfont icontupian"></i></div>
                 </shop-image>
                 <div class="cart-list-item__info">
-                    <div class="cart-list-item__info-title">{{ item.title }}</div>
-                    <div class="cart-list-item__info-subtitle"><div>{{ item.variant.title }}</div></div>
+                    <div class="cart-list-item__info-title">{{ item.product_title }}</div>
+                    <div class="cart-list-item__info-subtitle"><div>{{ item.variant_title }}</div></div>
                     <div class="cart-list-item__info-price">¥ <strong>{{ item.price }}</strong></div>
                     <div class="cart-list-item__info-amount">
                         <shop-input-num
                             :value="item.quantity"
-                            :max="item.limit ? item.limit : item.stock"
+                            :max="item.stock"
                             :min="1"
-                            :disabled="!item.stock || isEdit"
+                            :disabled="!item.visibility || isEdit"
                             @change="changeNum(item,$event)">
                         </shop-input-num>
                     </div>
@@ -35,38 +39,38 @@
             总计：<span>¥ <strong>{{ total }}</strong></span>
         </div>
         <div class="cart-footer-button" v-if="!isEdit">
-            <shop-button size="medium">确认订单</shop-button>
+            <shop-button size="medium" @click="confirmOrder">确认订单</shop-button>
         </div>
         <div class="cart-footer-button" v-if="isEdit" style="text-align:center">
-            <shop-button size="medium">移除选中</shop-button>
+            <shop-button size="medium" @click="deleteCart('part')">移除选中</shop-button>
         </div>
         <div class="cart-footer-button" v-if="isEdit" style="text-align:center">
-            <shop-button size="medium">全部移除</shop-button>
+            <shop-button size="medium" @click="deleteCart('all')">全部移除</shop-button>
         </div>
     </div>
 </div>
 </template>
 
 <script>
+import { get_cart, edit_cart, delete_cart, create_cart_cache } from '@/api/cart'
+import { Toast, MessageBox } from 'mint-ui'
+import { getToken } from '@/utils/auth'
 export default{
     data(){
         return{
             loading:false,
             height:0,
-            items:[
-                { id:1, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
-                { id:2, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
-                { id:3, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
-                { id:4, title:'测试商品', quantity:1, limit:null, stock:10, price:20, variant:{ title:'1件装'}},
-            ],
+            items:[],
             selected:[],
             selectItems:[],
             selectAll:false,
-            isEdit:false
+            isEdit:false,
+            complete:0
         }
     },
     created(){
-        this.getItems()
+        if(getToken()) this.getItems()
+            else this.$router.go(-1)
     },
     mounted(){
         this.$nextTick(()=>{
@@ -88,9 +92,16 @@ export default{
     methods:{
         getItems(){
             this.loading = true
-            setTimeout(()=>{
+            get_cart().then(r=>{
+                this.items = r.data.body
                 this.loading = false
-            },1000)
+            }).catch(e=>{
+                this.loading = false
+                if(e.response.status === 401){
+                    this.$store.dispatch('logout')
+                    this.$router.go(-1)
+                }
+            })
         },
         checkAll(){
             this.selected = []
@@ -108,12 +119,88 @@ export default{
         },
         changeNum(item,val){
             item.quantity = val
+            let _data = {
+                variant_id:item.variant_id,
+                quantity:val
+            }
+            this.loading = true
+            edit_cart(_data).then(()=>{
+                this.loading = false
+            }).catch(e=>{
+                if(e.response.status === 401){
+                    this.$store.dispatch('logout')
+                    this.$router.go(-1)
+                }else{
+                    Toast(e.response.data.message)
+                    this.loading = false
+                }
+            })
         },
         toEdit(){
+            if(this.items.length === 0) return
             this.isEdit = !this.isEdit
             this.selectAll = false
             this.selected = []
             this.selectItems = []
+        },
+        toProducts(){
+            this.$router.push({name:'Types'})
+        },
+        confirmOrder(){
+            if(this.items.length === 0) return
+            if(this.selectItems.length === 0){
+                Toast('请先选择商品')
+                return
+            }
+            let _data = []
+            let _item = {}
+            this.selectItems.map(v=>{
+                _item['variant_id'] = v.variant_id
+                _item['quantity'] = v.quantity
+                _data.push(_item)
+                _item = {}
+            })
+            create_cart_cache({items:_data}).then(r=>{
+                this.$router.push({name:'Checkout',query:{key:r.data.body.key}})
+            }).catch(e=>{
+                if(e.response.status === 401){
+                    MessageBox({
+                        title:'提示',
+                        message:'登录超时，请重新登录',
+                        confirmButtonText:'现在登录',
+                        showCancelButton:true,
+                        cancelButtonText:'再逛逛'
+                    }).then(()=>{
+                        this.$router.push({name:'Login',query:{from:this.$route.name}})
+                    }).catch(()=>{
+                        this.$router.push({name:'Home'})
+                    })
+                }
+            })
+        },
+        deleteCart(type){
+            if(type === 'all') this.delete(this.items)
+                else this.delete(this.selectItems)
+        },
+        delete(data){
+            if(this.complete === data.length){
+                this.getItems()
+                this.complete = 0
+                this.isEdit = false
+                return
+            }
+            let _id = data[this.complete].variant_id
+            delete_cart(_id).then(()=>{
+                this.complete += 1
+                this.delete(data)
+            }).catch(e=>{
+                if(e.response.status === 401){
+                    this.$store.dispatch('logout')
+                    this.$router.go(-1)
+                }else{
+                    Toast(e.response.data.message)
+                }
+            })
         }
     },
     watch:{
@@ -240,6 +327,20 @@ export default{
 .cart-footer .cart-footer-button button{
     margin-top:4px;
     height:35px;
+    border-radius:25px;
+}
+
+.cart-placeholder{
+    margin-top:100px;
+    text-align:center;
+    font-size:$normal-font-size;
+    color:$other-font-color;
+}
+.cart-placeholder-button span{
+    margin-top:10px;
+    line-height:60px;
+    padding:3px 10px;
+    border:1px solid $disabled-color;
     border-radius:25px;
 }
 </style>

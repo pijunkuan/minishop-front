@@ -18,7 +18,8 @@
                 :src="item"
                 :width="styleWidth"
                 :height="height"
-                type="center">
+                :type="type">
+                <div slot="error" class="image-carousel-placeholder" :style="{ height: (height ? height : styleWidth) + 'px', width: styleWidth + 'px'}"></div>
             </shop-image>
         </mt-swipe-item>
     </mt-swipe>
@@ -51,6 +52,10 @@ export default{
         height:{
             type:Number,
             default:300
+        },
+        type:{
+            type:String,
+            default:'center'
         }
     },
     data(){

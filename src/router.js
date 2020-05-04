@@ -44,12 +44,13 @@ export const routes = [
 	{
 		path:'/search',
 		name:'Search',
+		meta:{ keepAlive:true },
 		component: r => require(['./pages/Search/index.vue'], r)
 	},
 	{
 		path:'/products',
 		name:'Products',
-		meta:{ title:'全部商品' },
+		meta:{ title:'全部商品', keepAlive:true },
 		component: r => require(['./pages/Products/index.vue'], r)
 	},
 	{
@@ -60,7 +61,7 @@ export const routes = [
 	{
 		path:'/types',
 		name:'Types',
-		meta:{ title:'分类菜单' },
+		meta:{ title:'分类菜单', keepAlive:true },
 		component: r => require(['./pages/Types/index.vue'], r)
 	},
 	{
@@ -84,13 +85,11 @@ export const routes = [
 	{
 		path:'/checkpay',
 		name:'Checkpay',
-		meta:{ title:'支付订单' },
 		component: r => require(['./pages/Checkout/Checkpay.vue'], r)
 	},
 	{
 		path:'/checksuc',
 		name:'Checksuc',
-		meta:{ title:'提交成功' },
 		component: r => require(['./pages/Checkout/Checksuc.vue'], r)
 	},
 	{
@@ -107,7 +106,7 @@ export const routes = [
 	{
 		path:'/user/order',
 		name:'UserOrder',
-		meta:{ title:'我的订单' },
+		meta:{ title:'我的订单', keepAlive:true },
 		component: r => require(['./pages/User/Order.vue'], r)
 	},
 	{
@@ -130,5 +129,6 @@ export const routes = [
 ]
 
 export default new Router({
+	mode:'history',
 	routes:routes
 })

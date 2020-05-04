@@ -1,8 +1,10 @@
 <template>
 <div>
+    <page-loading :loading="loading"></page-loading>
     <div class="user-home-header">
+        <div class="user-home-header-icon" @click="toLogout"><i class="iconfont icontuichu1"></i></div>
         <div>
-            <shop-image :src="avatar" :width="80" type="fit" circled>
+            <shop-image :src="$store.getters.avatar" :width="80" type="fit" circled>
                 <div slot="placeholder">
                     <i class="iconfont iconiconzhucetouxiang"></i>
                 </div>
@@ -12,7 +14,7 @@
             </shop-image>
         </div>
         <div>
-            <div>{{ username }}</div>
+            <div>{{ $store.getters.username ? $store.getters.username : '-' }}</div>
             <div class="user-home-level">
                 <span><i class="iconfont iconhuiyuan"></i></span>
                 {{ level.name }}
@@ -20,56 +22,107 @@
         </div>
     </div>
     <div class="user-home-wallet">
-        <div><i class="iconfont iconyinhangyouhui"></i>余额 | <span>¥ <strong>{{ wallet }}</strong></span></div>
+        <div @click="toWallet"><i class="iconfont iconyinhangyouhui"></i>余额 | <span>¥ <strong>{{ $store.getters.balance ? $store.getters.balance : '0' }}</strong></span></div>
     </div>
     <div class="user-home-order">
         <div class="user-home-order-title">我的订单</div>
-        <div class="user-home-order-item">
+        <div class="user-home-order-item" @click="toOrder('')">
+            <div><shop-icon name="dingdan" size="medium"></shop-icon></div>
+            <div>全部</div>
+        </div>
+        <div class="user-home-order-item" @click="toOrder('pending')">
             <div><shop-icon name="daifukuan" size="medium"></shop-icon></div>
             <div>待付款</div>
         </div>
-        <div class="user-home-order-item">
+        <div class="user-home-order-item" @click="toOrder('processing')">
             <div><shop-icon name="daifahuo" size="medium"></shop-icon></div>
             <div>待发货</div>
         </div>
-        <div class="user-home-order-item">
+        <div class="user-home-order-item" @click="toOrder('sent')">
             <div><shop-icon name="daishouhuo" size="medium"></shop-icon></div>
             <div>待收货</div>
         </div>
-        <div class="user-home-order-item">
-            <div><shop-icon name="daipingjia" size="medium"></shop-icon></div>
-            <div>待评价</div>
-        </div>
-        <div class="user-home-order-item">
+        <div class="user-home-order-item" @click="toOrder('refunding')">
             <div><shop-icon name="shouhou" size="medium"></shop-icon></div>
             <div>退换货</div>
         </div>
     </div>
     <div class="user-home-other">
-        <div>
+        <div @click="toAddress">
             <div><shop-icon name="ditu1" size="medium"></shop-icon></div>
             <div>地址簿</div>
         </div>
-        <div>
+        <!-- <div>
             <div><shop-icon name="youhuiquan" size="medium"></shop-icon></div>
             <div>优惠券</div>
-        </div>
+        </div> -->
     </div>
 </div>
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default{
     data(){
         return{
-            avatar:"",
-            username:'用户名xxx',
+            loading:false,
             level:{name:'普通会员',type:'normal'},
             levels:{
                 normal:'',
                 higher:''
-            },
-            wallet:3000
+            }
+        }
+    },
+    created(){
+        this.loading = true
+        this.$store.dispatch('getUserInfo').then(()=>{
+            this.$store.dispatch('getBalance').then(()=>{
+                this.loading = false
+            }).catch(e=>{
+                if(e.response.status === 401){
+                    Toast({
+                        message:'登录超时',
+                        duration:1000
+                    })
+                    this.$store.dispatch('logout')
+                    setTimeout(()=>{
+                        this.$router.push({name:'Login'})
+                    },1000)
+                }
+            })
+        }).catch(err=>{
+            if(err.response.status === 401){
+                Toast({
+                    message:'登录超时',
+                    duration:1000
+                })
+                this.$store.dispatch('logout')
+                setTimeout(()=>{
+                    this.$router.push({name:'Login'})
+                },1000)
+            }
+        })
+    },
+    methods:{
+        toLogout(){
+            this.$store.dispatch('logout')
+            Toast({
+                message:'正在退出登录...',
+                duration:1000
+            })
+            setTimeout(()=>{
+                this.$router.push({name:'Home'})
+            },1000)
+        },
+        toWallet(){
+            this.$router.push({name:'UserWallet'})
+        },
+        toOrder(status){
+            if(status) this.$router.push({name:'UserOrder',params:{status:status}})
+                else this.$router.push({name:'UserOrder'})
+        },
+        toAddress(){
+            this.$router.push({name:'UserAddress'})
         }
     }
 }
@@ -171,5 +224,13 @@ export default{
     text-align:center;
     color:$sub-font-color;
     font-size:$small-font-size;
+}
+
+.user-home-header-icon{
+    position:absolute;
+    right:15px;
+}
+.user-home-header-icon i{
+    font-size:22px;
 }
 </style>

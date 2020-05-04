@@ -20,7 +20,7 @@ Vue.component(Swipe.name,Swipe)
 Vue.component(SwipeItem.name,SwipeItem)
 Vue.use(InfiniteScroll)
 
-require('@/utils/mock')
+// require('@/utils/mock')
 
 new Vue({
   router,

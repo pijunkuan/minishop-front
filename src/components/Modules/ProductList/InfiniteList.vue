@@ -7,19 +7,25 @@
         infinite-scroll-disabled="loading"
         infinite-scroll-distance="10"
         infinite-scroll-immediate-check>
-        <li v-for="(item,index) in items" :key="index" :style="{width:width + 'px', height:width + 90 + 'px'}">
+        <li v-for="(item,index) in items" :key="index" :style="{width:width + 'px', height:width + 90 + 'px'}" @click="toProduct(item)">
             <div>
-                <shop-image :src="item.src" rounded type="fit" :width="width - 20">
+                <div 
+                    v-if="item.stock * 1 === 0" 
+                    class="infinite-shop-list__soldout"
+                    :style="{height:width - 50 + 'px', width:width - 50 + 'px', lineHeight:width - 50 + 'px'}">
+                    <div :style="{height:width - 70 + 'px', width:width - 70 + 'px', lineHeight:width - 70 + 'px'}">已抢光</div>
+                </div>
+                <shop-image :src="item.img" rounded type="stretch" :width="width - 20">
                     <div class="product-image-error" :style="{height:width - 20 + 'px'}" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
             </div>
             <div>
-                <div class="infinite-shop-content__title">{{ item.title }}</div>
+                <div class="infinite-shop-content__title">{{ item.product_title }}</div>
                 <div>
                     <span class="infinite-shop-content__price">¥ <strong>{{ item.price ? item.price : '-' }}</strong></span>
                     <span v-if="item.oriPrice" class="infinite-shop-content__oriprice">¥ {{ item.oriPrice }}</span>
                 </div>
-                <div class="infinite-shop-content__sale">{{ item.sale ? item.sale : 0 }}人已购买</div>
+                <!-- <div class="infinite-shop-content__sale">{{ item.sale ? item.sale : 0 }}人已购买</div> -->
             </div>
         </li>
         <div
@@ -60,6 +66,10 @@ export default{
     methods:{
         loadMore(){
             this.$emit('load')
+        },
+        toProduct(item){
+            if(item.id === undefined) return
+                else this.$router.push({name:'Product',query:{id:item.id}})
         }
     }
 }
@@ -67,7 +77,7 @@ export default{
 
 <style lang="scss" scoped>
 @import '@/assets/style/base.scss';
-.infinite-shop-list__placeholder{
+.infinite-shop-list__placeholder,.infinite-shop-list__error{
     height:50px;
     line-height:50px;
     font-size:$small-font-size;
@@ -105,6 +115,9 @@ export default{
 .infinite-shop-list li>div:last-child{
     padding:0 6px;
 }
+.infinite-shop-list li>div{
+    position:relative;
+}
 .infinite-shop-content__title{
     font-size:$middle-font-size;
     line-height:$middle-font-height;
@@ -139,5 +152,22 @@ export default{
 .product-image-error i{
     font-size:30px;
     color:$line-color;
+}
+
+.infinite-shop-list__soldout{
+    position:absolute;
+    margin-top:15px;
+    margin-left:15px;
+    text-align:center;
+    border-radius:50%;
+    font-size:$small-font-size;
+    color:#fff;
+    background-color:rgba(0,0,0,0.4);
+}
+.infinite-shop-list__soldout>div{
+    margin-top:10px;
+    margin-left:10px;
+    border-radius:50%;
+    background-color:rgba(0,0,0,0.6);
 }
 </style>

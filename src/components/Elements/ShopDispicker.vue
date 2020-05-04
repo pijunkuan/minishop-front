@@ -155,8 +155,7 @@ export default{
 <style lang="scss" scoped>
 @import '@/assets/style/base.scss';
 .shop-dispicker-input{
-    width:100%;
-    padding:5px 8px;
+    padding:10px 8px;
     border-width:1px;
     border-style:solid;
     border-radius:4px;

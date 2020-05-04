@@ -10,18 +10,19 @@
         <li v-for="(item,index) in items" :key="index" :style="{ width:width - 10 + 'px'}">
             <div @click="toItem(item)">
                 <div v-if="item.saletag" class="infinite-shop-list__saletag"><div>{{ item.saletag }}</div></div>
-                <shop-image :src="item.src" rounded type="fit" :width="90">
+                <div v-if="item.stock * 1 === 0" class="infinite-shop-list__soldout"><div>已抢光</div></div>
+                <shop-image :src="item.img" rounded type="stretch" :width="90">
                     <div class="product-image-error" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
             </div>
             <div :style="{width:width - 120 + 'px'}">
-                <div class="infinite-shop-content__title" @click="toItem(item)">{{ item.title }}</div>
+                <div class="infinite-shop-content__title" @click="toItem(item)">{{ item.product_title }}</div>
                 <div v-if="item.subTitle" @click="toItem(item)"><span class="infinite-shop-content__subtitle">{{ item.subTitle }}</span></div>
                 <div @click="toItem(item)">
                     <span class="infinite-shop-content__price">¥ <strong>{{ item.price ? item.price : '-' }}</strong></span>
                     <span v-if="item.oriPrice" class="infinite-shop-content__oriprice">¥ {{ item.oriPrice }}</span>
                 </div>
-                <div class="infinite-shop-content__sale" @click="toItem(item)">{{ item.sale ? item.sale : 0 }}人已买</div>
+                <!-- <div class="infinite-shop-content__sale" @click="toItem(item)">{{ item.sale ? item.sale : 0 }}人已买</div> -->
                 <div class="infinite-shop-content__button" @click="addCart(item)"><slot name="button"></slot></div>
             </div>
         </li>
@@ -59,7 +60,7 @@ export default{
             this.$emit('cart',item)
         },
         toItem(item){
-            if(item.id === undefined) this.$router.push({name:'Product',query:{id:2312321}})
+            if(item.id === undefined) return
                 else this.$router.push({name:'Product',query:{id:item.id}})
         }
     }
@@ -166,5 +167,28 @@ export default{
 .product-image-error i{
     font-size:30px;
     color:$line-color;
+}
+
+.infinite-shop-list__soldout{
+    position:absolute;
+    width:70px;
+    height:70px;
+    margin-top:10px;
+    margin-left:10px;
+    line-height:70px;
+    text-align:center;
+    border-radius:50%;
+    font-size:$small-font-size;
+    color:#fff;
+    background-color:rgba(0,0,0,0.4);
+}
+.infinite-shop-list__soldout>div{
+    width:60px;
+    height:60px;
+    line-height:60px;
+    margin-top:5px;
+    margin-left:5px;
+    border-radius:50%;
+    background-color:rgba(0,0,0,0.6);
 }
 </style>

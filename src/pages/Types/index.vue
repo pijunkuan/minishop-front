@@ -8,7 +8,7 @@
                     :placeholder="'大家都在搜 ' + placeholder"
                     type="search"
                     size="small" 
-                    v-model="search"
+                    v-model="fetchQuery.name"
                     @focus="handleFocus"
                     @keyup.enter.native="getSearch">
                     <shop-icon slot="prepend" size="mini" name="sousuo"></shop-icon>
@@ -23,10 +23,16 @@
         <div class="type-menu-bar">
             <div 
                 class="type-menu-bar__item" 
-                :class="{'is-active':activeIndex === index}"
+                :class="{'is-active':activeIndex === 0}"
+                @click="changeAll">
+                <div style="width:67px;overflow:hidden">全部商品</div>
+            </div>
+            <div 
+                class="type-menu-bar__item" 
+                :class="{'is-active':activeIndex === ('m' + index)}"
                 v-for="(menu,index) in menus" :key="index"
-                @click="changeMenu(index)">
-                <div>{{ menu }}</div>
+                @click="changeMenu(menu,index)">
+                <div style="width:67px;overflow:hidden">{{ menu.category_title }}</div>
             </div>
         </div>
         <div class="type-content" id="content">
@@ -50,14 +56,18 @@
         @close="closePop">
         <div slot="content">
             <div style="margin-bottom:20px">
-                <shop-image class="pop-item-image" :src="currentItem.src" :width="100" rounded type="fit">
+                <shop-image class="pop-item-image" :src="currentItem.images[0]" :width="100" rounded type="stretch">
                     <div class="product-image-error" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
-                <div class="pop-item-title">{{ currentItem.title }}</div>
+                <div class="pop-item-title">
+                    <div>{{ popLoading ? '-' : currentItem.product.product_title }}</div>
+                    <div class="pop-item-title__price">¥ <strong>{{ popLoading ? '-' : selectVariant.price }}</strong></div>
+                </div>
             </div>
             <div class="pop-item-content">
                 <div class="pop-item-content__title">选择规格</div>
-                <div class="pop-item-content__content">
+                <div class="pop-item-content__content" v-if="popLoading"></div>
+                <div class="pop-item-content__content" v-else>
                     <div v-for="(variable,index) in currentItem.variants" :key="index">
                         <shop-radio 
                             type="button"
@@ -66,7 +76,7 @@
                             v-model="selectId" 
                             :label="variable.id" 
                             @change="changeVariant(variable)">
-                            {{ variable.title }}
+                            {{ variable.variant_title }}
                         </shop-radio>
                     </div>
                 </div>
@@ -76,9 +86,9 @@
                 <div class="pop-item-content__content">
                     <shop-input-num
                         :value="selectNum"
-                        :max="selectVariant.limit ? selectVariant.limit : selectVariant.stock"
+                        :max="selectVariant.stock"
                         :min="1"
-                        :disabled="!selectVariant.stock"
+                        :disabled="!selectVariant.stock || popLoading"
                         @change="getNum">
                     </shop-input-num>
                 </div>
@@ -88,7 +98,7 @@
             <shop-button 
                 :rounded="false" 
                 :loading="btnLoading"
-                :disabled="!selectVariant.stock" 
+                :disabled="!selectVariant.stock || popLoading" 
                 @click="confirmAdd">
                 加入购物车
             </shop-button>
@@ -98,6 +108,8 @@
 </template>
 
 <script>
+import { get_types, get_products, get_product } from '@/api/products'
+import { add_cart } from '@/api/cart'
 import { Toast } from 'mint-ui'
 import InfiniteColumn from '@/components/Modules/ProductList/InfiniteColumn'
 export default{
@@ -106,23 +118,32 @@ export default{
     },
     data(){
         return{
-            search:'',
+            fetchQuery:{
+                name:'',
+                page:0,
+                pageSize:15,
+                categories:[],
+                Q4S:1
+            },
             placeholder:'',
             visible:false,
-            menus:['全部商品','护肤品','化妆品'],
-            items:[{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品',subTitle:'全部商品', price:20, saletag:'新品',variants:[{id:1,title:'1件装',limit:1,stock:2},{id:2,title:'2件装',limit:null,stock:2}] },{ src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', price:20, saletag:'新品' }],
-            activeIndex:1,
+            menus:[],
+            items:[],
+            activeIndex:0,
             width:0,
             height:0,
             loading:false,
             noresult:false,
             popShow:false,
+            popLoading:false,
             currentItem:{
+                product:{},
+                images:[],
                 variants:[]
             },
             selectVariant:{},
             selectId:null,
-            selectNum:0,
+            selectNum:1,
             btnLoading:false
         }
     },
@@ -132,53 +153,112 @@ export default{
             this.height = document.getElementById('container').offsetHeight - 50
         })
     },
+    created(){
+        this.getMenus()
+    },
+    beforeRouteLeave(to,from,next){
+        if(to.name === 'Product') from.meta.keepAlive = true
+            else from.meta.keepAlive = false
+        next()
+    },
     methods:{
-        changeMenu(index){
-            this.activeIndex = index
+        getMenus(){
+            get_types().then(r=>{
+                this.menus = r.data.body
+            })
+        },
+        changeAll(){
+            this.activeIndex = 0
             this.items = []
-            this.nomore = false
-            this.loading = true
+            this.noresult = false
+            this.loading = false
+            this.fetchQuery.page = 0
+            this.fetchQuery.categories = []
+            this.getItems()
+        },
+        changeMenu(item,index){
+            this.activeIndex = 'm' + index
+            this.items = []
+            this.noresult = false
+            this.loading = false
+            this.fetchQuery.page = 0
+            this.fetchQuery.categories = []
+            this.fetchQuery.categories.push(item.id)
             this.getItems()
         },
         getItems(){
-            setTimeout(()=>{
-                let _data = []
-                for(let i = 0; i<= 10; i++){
-                    _data.push(i)
-                }
+            this.loading = true
+            this.noresult = false
+            let _data = []
+            this.fetchQuery.page += 1
+            get_products(this.fetchQuery).then(r=>{
+                _data = r.data.body.data
                 if(_data.length === 0){
                     this.loading = true
                     this.noresult = true
                 }else{
+                    this.items = this.items.concat(_data)
                     this.loading = false
                     this.noresult = false
-                    this.items = this.items.concat(_data)
                 }
-            },1000)
+            }).catch(()=>{
+                this.loading = true
+                this.noresult = true
+            })
         },
         addCart(val){
-            this.currentItem = val
-            if(val.variants !== undefined){
-                this.selectVariant = val.variants[0]
-                this.selectId = this.selectVariant.id
-            }
             this.popShow = true
+            this.popLoading = true
+            get_product(val.id).then(r=>{
+                let _images = []
+                if(r.data.body.images.length !== 0){
+                    r.data.body.images.map(v=>{
+                        _images.push(v.url)
+                    })
+                }
+                this.currentItem = r.data.body
+                this.currentItem.images = _images
+                this.selectVariant = this.currentItem.variants[0]
+                this.selectId = this.selectVariant.id
+                this.popLoading = false
+            }).catch(()=>{
+                this.popLoading = false
+            })
         },
         closePop(){
             this.popShow = false
+            this.currentItem = {
+                product:{},
+                variants:[],
+                images:[]
+            }
             this.selectId = null
             this.selectVariant = {}
             this.selectNum = 1
         },
         confirmAdd(){
             this.btnLoading = true
-            setTimeout(()=>{
+            let _data = {
+                variant_id:this.selectVariant.id,
+                quantity:this.selectNum
+            }
+            add_cart(_data).then(()=>{
                 Toast('成功加入购物车')
                 this.btnLoading = false
-            },500)
+                this.$store.dispatch('getCart')
+                this.closePop()
+            }).catch(e=>{
+                Toast(e.response.data.message)
+                this.btnLoading = false
+                this.closePop()
+            })
         },
         getSearch(){
-
+            this.fetchQuery.page = 0
+            this.fetchQuery.categories = []
+            this.activeIndex = 0
+            this.items = []
+            this.getItems()
         },
         handleFocus(){
             this.visible = true
@@ -324,5 +404,14 @@ export default{
 .pop-item-content-quantity>div:last-child{
     width:calc(100% - 80px);
     text-align:right;
+}
+
+.pop-item-title__price{
+    @include price-color(1);
+    font-size:$small-font-size;
+}
+
+.pop-item-title__price strong{
+    font-size:$normal-font-size;
 }
 </style>
