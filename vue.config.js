@@ -4,6 +4,7 @@ const path = require('path')
 const webname = defaultSettings.title || "MiniShop"
 
 const CompressionPlugin = require('compression-webpack-plugin')
+let { openGzip } = require('./package.json')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
