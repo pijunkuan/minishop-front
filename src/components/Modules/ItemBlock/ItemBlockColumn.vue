@@ -3,15 +3,20 @@
     <div class="item-block-2__title">{{ title }}</div>
     <div class="item-block-2__placeholder" v-if="loading && items.length === 0">加载中...</div>
     <div class="item-block-2__error" v-if="!loading && items.length === 0">暂无结果</div>
-    <div class="item-block-2__content" v-for="(item,index) in items" :key="index">
+    <div class="item-block-2__content" v-for="(item,index) in items" :key="index" @click="toProduct(item)">
         <div>
-            <shop-image style="margin-top:15px" :src="item.src" :width="80" type="fit" circled></shop-image>
+            <shop-image :src="item.img" :width="100" type="fit" circled>
+                <div slot="error" class="item-block-2-image__error"></div>
+            </shop-image>
         </div>
         <div>
-            <div class="item-block-2__content-title">{{ item.title }}</div>
-            <div v-if="item.subTitle"><span class="item-block-2__content-subtitle">{{ item.subTitle }}</span></div>
-            <div class="item-block-2__content-hot">{{ item.sale }}人已购买</div>
-            <div class="item-block-2__content-price">¥ <strong>{{ item.price }}</strong></div>
+            <div class="item-block-2__content-title">{{ item.product_title }}</div>
+            <div v-if="item.sub_title"><span class="item-block-2__content-subtitle">{{ item.sub_title }}</span></div>
+            <!-- <div class="item-block-2__content-hot">{{ item.sale }}人已购买</div> -->
+            <div class="item-block-2__content-price">
+                <span class="current-price">¥ <strong>{{ item.price }}</strong></span>
+                <span v-if="item.ori_price" class="ori-price">¥ <strong>{{ item.ori_price }}</strong></span>
+            </div>
         </div>
     </div>
 </div>
@@ -30,6 +35,11 @@ export default{
         },
         items:Array,
         loading:Boolean
+    },
+    methods:{
+        toProduct(item){
+            this.$router.push({name:'Product', query:{id:item.id}})
+        }
     }
 }
 </script>
@@ -45,6 +55,19 @@ export default{
     font-size:$normal-font-size;
     color:$main-font-color;
 }
+.item-block-2__content .shop-image{
+    border:1px solid $line-color * 1.05;
+    background-color:$line-color * 1.05;
+    border-radius:50%;
+}
+.item-block-2-image__error{
+    height:100px;
+    width:100px;
+    line-height:100px;
+    border-radius:50%;
+    border:1px solid $line-color * 1.05;
+    background-color:$line-color * 1.05;
+}
 .item-block-2__placeholder,.item-block-2__error{
     background-color:#fff;
     height:390px;
@@ -57,36 +80,35 @@ export default{
     color:$disabled-color!important;
 }
 .item-block-2__content{
-    height:120px;
-    padding:5px 10px;
+    padding:10px;
     background-color:#fff;
+    vertical-align:middle;
 }
 .item-block-2__content:after{
     position:absolute;
     content:'';
     left:0;
-    margin-top:125px;
-    width:100%;
+    width:calc(100% - 20px);
+    margin:112px 10px 0;
     border-bottom:1px solid $line-color;
 }
 .item-block-2__content>div{
     display:inline-block;
-    height:110px;
     vertical-align:middle;
 }
 .item-block-2__content>div:last-child{
-    width:calc(100% - 95px);
-    margin-left:15px;
+    width:calc(100% - 135px);
+    margin-left:30px;
     padding:5px 0;
-    height:110px;
 }
 .item-block-2__content-title{
     font-size:$middle-font-size;
     line-height:$middle-font-height;
-    max-height:$middle-font-height * 2;
+    max-height:$middle-font-height;
     overflow:hidden;
     word-break:break-all;
     color:$main-font-color;
+    margin-bottom:5px;
 }
 .item-block-2__content-subtitle{
     padding:3px 5px;
@@ -106,11 +128,18 @@ export default{
     color:$other-font-color;
 }
 .item-block-2__content-price{
-    margin-top:3px;
+    margin-top:10px;
     font-size:$middle-font-size;
+}
+.item-block-2__content-price .current-price{
     @include price-color(1);
 }
-.item-block-2__content-price strong{
+.item-block-2__content-price .current-price strong{
     font-size:$large-font-size;
+}
+.item-block-2__content-price .ori-price{
+    color:$other-font-color;
+    text-decoration:line-through;
+    margin-left:10px;
 }
 </style>

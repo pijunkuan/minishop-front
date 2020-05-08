@@ -15,7 +15,7 @@
                     :style="{height:width - 50 + 'px', width:width - 50 + 'px', lineHeight:width - 50 + 'px'}">
                     <div :style="{height:width - 70 + 'px', width:width - 70 + 'px', lineHeight:width - 70 + 'px'}">已抢光</div>
                 </div>
-                <shop-image :src="item.img" rounded type="stretch" :width="width - 20">
+                <shop-image :src="item.img" rounded type="fit" :width="width - 20">
                     <div class="product-image-error" :style="{height:width - 20 + 'px'}" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
             </div>

@@ -15,7 +15,7 @@
         <div class="shop-bottom-item__text">分类</div>
     </div>
     <div class="shop-bottom-item" @click="changeMenu(3)">
-        <div class="shop-bottom-item-badge">{{ $store.getters.cart >= 10 ? '9+' : $store.getters.cart }}</div>
+        <div class="shop-bottom-item-badge" v-if="$store.getters.cart">{{ $store.getters.cart >= 10 ? '9+' : $store.getters.cart }}</div>
         <shop-icon
             size="small"
             :name="defaultIndex === 3 ? '20gouwuchefill' : 'shiwu-gouwuche'">
@@ -40,7 +40,7 @@ export default{
         defaultIndex:Number
     },
     created(){
-        if(getToken()) this.$store.dispatch('getCart')
+        if(this.$store.getters.token) this.$store.dispatch('getCart')
     },
     methods:{
         changeMenu(index){

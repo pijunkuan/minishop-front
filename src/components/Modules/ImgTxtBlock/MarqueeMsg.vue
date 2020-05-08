@@ -16,11 +16,13 @@ export default{
     },
     mounted(){
         this.$nextTick(()=>{
-            let _boxWidth = window.innerWidth - 35
-            let _msgWidth = document.getElementById('message').offsetWidth
-            if(_boxWidth > _msgWidth) return
-            document.getElementById('message').classList.add('padding')
-            this.scrollText(_msgWidth)
+            setTimeout(()=>{
+                let _boxWidth = window.innerWidth - 35
+                let _msgWidth = document.getElementById('message').offsetWidth
+                if(_boxWidth > _msgWidth) return
+                document.getElementById('message').classList.add('padding')
+                this.scrollText(_msgWidth)
+            },1000)
         })
     },
     methods:{

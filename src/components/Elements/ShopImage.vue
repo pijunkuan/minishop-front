@@ -100,11 +100,18 @@
 }
 
 .shop-image.fit-image img{
-    max-width:100%;
+    width:100%;
+    height:100%;
+    object-fit:scale-down;
 }
 .shop-image.stretch-image img{
     width:100%;
     height:100%;
+}
+.shop-image.cover-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
 .shop-image.center-image img{

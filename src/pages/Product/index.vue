@@ -4,7 +4,7 @@
         <page-loading :loading="loading"></page-loading>
         <div v-if="noStock" class="item-soldout" :style="{marginTop:(width - 200) / 2 + 'px'}"><div>已抢光</div></div>
         <img-carousel
-            type="stretch"
+            type="fit"
             :height="width"
             :indicator="false"
             :images="item.images">
@@ -64,7 +64,7 @@
     <shop-popup :show="variantShow" @close="closeVariant">
         <div slot="content">
             <div style="margin-bottom:20px">
-                <shop-image class="pop-item-image" :src="item.images[0]" :width="100" rounded type="stretch">
+                <shop-image class="pop-item-image" :src="item.images.length !== 0 ? item.images[0].img : ''" :width="100" rounded type="fit">
                     <div class="product-image-error" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
                 <div class="pop-item-title">
@@ -171,14 +171,25 @@ export default{
                     else this.noStock = true
                 if(_data.images.length !== 0){
                     _data.images.map(v=>{
-                        this.item.images.push(v.url)
+                        this.item.images.push({
+                            img:v.url
+                        })
                     })
                 }
                 this.item.product = _data.product
                 this.item.variants = _data.variants
                 this.loading = false
-            }).catch(()=>{
-                this.loading = false
+            }).catch(e=>{
+                if(e.response.status === 404){
+                    this.loading = false
+                    Toast({
+                        message:'商品已删除',
+                        duration:1000
+                    })
+                    setTimeout(()=>{
+                        this.$router.go(-1)
+                    },1000)
+                }
             })
         },
         toAdd(type){
@@ -356,7 +367,6 @@ export default{
 
 .product-image-error{
     height:98px;
-    border:1px solid $line-color;
     border-radius:5px;
     background-color:$background-color;
 }
@@ -368,6 +378,10 @@ export default{
 .pop-item-image{
     display:inline-block;
     vertical-align:middle;
+}
+.pop-item-image{
+    border:1px solid $line-color;
+    border-radius:5px;
 }
 .pop-item-title{
     display:inline-block;

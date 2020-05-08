@@ -165,6 +165,20 @@ export default{
         getMenus(){
             get_types().then(r=>{
                 this.menus = r.data.body
+                let _data = []
+                this.menus.map(v=>{
+                    _data.push(v.id)
+                })
+                if(this.$route.params.id !== undefined){
+                    this.fetchQuery.categories = []
+                    this.fetchQuery.categories.push(this.$route.params.id)
+                    this.activeIndex = 'm' + _data.indexOf(this.$route.params.id)
+                    this.items = []
+                    this.noresult = false
+                    this.loading = false
+                    this.fetchQuery.page = 0
+                    this.getItems()
+                }
             })
         },
         changeAll(){

@@ -2,11 +2,11 @@
 <div>
     <div v-if="loading" class="item-block-3__placeholder">加载中...</div>
     <div v-if="!loading && !item" class="item-block-3__error">暂无结果</div>
-    <shop-image v-if="!loading && item" :src="item.src" :width="imageWidth" :height="200" type="stretch"></shop-image>
-    <div v-if="item" class="item-block-3__content">
+    <shop-image v-if="!loading && item" :src="item.img" :width="imageWidth" :height="imageHeight" type="cover" @click="toPage"></shop-image>
+    <div v-if="item" class="item-block-3__content" @click="toPage">
         <div class="item-block-3__content-title">
             <div>{{ item.title }}</div>
-            <div>{{ item.subTitle }}</div>
+            <div>{{ item.sub_title }}</div>
         </div>
         <div class="item-block-3__content-price">
             <div>¥ <strong>{{ item.price }}</strong></div>
@@ -23,14 +23,28 @@ export default{
     },
     data(){
         return{
-            imageWidth:0
+            imageWidth:0,
+            imageHeight:0
         }
     },
     mounted(){
         this.$nextTick(()=>{
             let _width = window.innerWidth
             this.imageWidth = _width
+            this.imageHeight = _width * 600 / 750
         })
+    },
+    methods:{
+        toPage(){
+            if(this.item.link === undefined || !this.item.link.link) return
+            if(this.item.link.link === 'Product'){
+                this.$router.push({name:this.item.link.link, query:{id:this.item.link.query}})
+            }else if(this.item.link.link === 'Types'){
+                this.$router.push({name:this.item.link.link, params:{id:this.item.link.query}})
+            }else{
+                this.$router.push({name:this.item.link.link})
+            }
+        }
     }
 }
 </script>

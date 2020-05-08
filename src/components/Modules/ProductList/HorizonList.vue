@@ -12,17 +12,20 @@
         暂无结果
     </div>
     <ul class="item-horizon-list-content" v-if="!loading && items.length !== 0">
-        <li v-for="(item,index) in items" :key="index" class="item-horizon-list__content">
+        <li v-for="(item,index) in items" :key="index" class="item-horizon-list__content" @click="toProduct(item)">
             <div>
-                <shop-image :src="item.src" :width="100" type="fit" rounded></shop-image>
+                <shop-image :src="item.img" :width="100" type="fit" rounded>
+                    <div slot="error" class="item-horizon-list-image__error"></div>
+                </shop-image>
             </div>
             <div>
-                <div class="item-horizon-list__content-title">{{ item.title }}</div>
+                <div class="item-horizon-list__content-title">{{ item.product_title }}</div>
+                <div class="item-horizon-list__content-subtitle">{{ item.sub_title }}</div>
                 <div>
                     <span class="item-horizon-list__content-price">¥ <strong>{{ item.price }}</strong></span>
-                    <span class="item-horizon-list__content-oriprice">¥ {{ item.oriPrice }}</span>
+                    <span class="item-horizon-list__content-oriprice">¥ {{ item.ori_price }}</span>
                 </div>
-                <div class="item-horizon-list__content-sale">{{ item.sale }}人已抢</div>
+                <!-- <div class="item-horizon-list__content-sale">{{ item.sale }}人已抢</div> -->
             </div>
         </li>
     </ul>
@@ -38,6 +41,11 @@ export default{
     data(){
         return{
             imgWidth:0
+        }
+    },
+    methods:{
+        toProduct(item){
+            this.$router.push({name:'Product',query:{id:item.id}})
         }
     }
 }
@@ -101,6 +109,11 @@ export default{
     white-space:initial;
     color:$main-font-color;
 }
+.item-horizon-list__content-subtitle{
+    color:$other-font-color;
+    font-size:$small-font-size;
+    margin-bottom:10px;
+}
 .item-horizon-list__content-price{
     @include price-color(1);
     font-size:$small-font-size;
@@ -118,5 +131,15 @@ export default{
     margin-top:5px;
     font-size:$small-font-size;
     color:$other-font-color;
+}
+
+.item-horizon-list__content .shop-image{
+    border:1px solid $line-color * 1.05;
+}
+.item-horizon-list-image__error{
+    width:100px;
+    height:100px;
+    background-color:$line-color * 1.05;
+    border:1px solid $line-color * 1.05;
 }
 </style>

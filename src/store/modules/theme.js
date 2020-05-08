@@ -14,8 +14,13 @@ const theme = {
 		setTheme({commit}){
 			return new Promise((resolve,reject)=>{
 				get_theme().then(r=>{
-					commit('SET_THEME',r.data.body.theme)
-					setTheme(r.data.body.theme)
+					if(r.data.body.theme){
+						commit('SET_THEME',r.data.body.theme)
+						setTheme(r.data.body.theme)
+					}else{
+						commit('SET_THEME','purple')
+						setTheme('purple')
+					}
 					resolve()
 				}).catch(e=>{
 					commit('SET_THEME','purple')

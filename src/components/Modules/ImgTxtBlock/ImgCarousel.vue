@@ -15,7 +15,8 @@
         </mt-swipe-item>
         <mt-swipe-item v-for="(item,index) in images" :key="index">
             <shop-image
-                :src="item"
+                @click="toPage(item)"
+                :src="item.img" 
                 :width="styleWidth"
                 :height="height"
                 :type="type">
@@ -55,12 +56,24 @@ export default{
         },
         type:{
             type:String,
-            default:'center'
+            default:'cover'
         }
     },
     data(){
         return{
             styleWidth:0
+        }
+    },
+    methods:{
+        toPage(item){
+            if(item.link === undefined || !item.link.link) return
+            if(item.link.link === 'Product'){
+                this.$router.push({name:item.link.link, query:{id:item.link.query}})
+            }else if(item.link.link === 'Types'){
+                this.$router.push({name:item.link.link, params:{id:item.link.query}})
+            }else{
+                this.$router.push({name:item.link.link})
+            }
         }
     },
     watch:{

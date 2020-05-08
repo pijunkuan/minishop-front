@@ -1,10 +1,11 @@
 <template>
 <div>
-    <img-carousel :images="banners" :height="200"></img-carousel>
+    <page-loading :loading="loading"></page-loading>
+    <img-carousel :images="banners" type="cover" :height="bannerHeight"></img-carousel>
     <div class="page-block home-menu-block">
-        <div v-for="(menu,index) in menus" :key="index" :style="{marginLeft: ((innerWidth - 20) / 4 - 60) / 2 + 'px', marginRight:((innerWidth - 20) / 4 - 60) / 2 + 'px'}">
-            <div v-if="menu.src">
-                <shop-image :width="60" :src="menu.src" circled type="fit"></shop-image>
+        <div v-for="(menu,index) in menus.items" :key="index" :style="{marginLeft: ((innerWidth - 20) / 4 - 60) / 2 + 'px', marginRight:((innerWidth - 20) / 4 - 60) / 2 + 'px'}" @click="toPage(menu)">
+            <div v-if="menu.img">
+                <shop-image :width="60" :src="menu.img" circled type="stretch"></shop-image>
             </div>
             <div v-else class="home-menu-block__placeholder" :style="{backgroundColor:menu.color}"></div>
             <div style="margin-top:8px">{{ menu.title }}</div>
@@ -15,17 +16,18 @@
         class="page-block"
         title="限时打折"
         :loading="limitLoading"
-        :items="limitItems"></item-block-limit>
+        :endTime="limit.endTime"
+        :items="limit.items"></item-block-limit>
     <item-block-column
         class="page-block"
         title="今日上新"
         :loading="colLoading"
-        :items="colItems"></item-block-column>
+        :items="newitem.items"></item-block-column>
     <item-block-mono
-        v-if="ad1"
+        v-if="ad"
         class="page-block"
-        :item="ad1"
-        :loading="adLoading1"></item-block-mono>
+        :item="ad"
+        :loading="adLoading"></item-block-mono>
     <img-txt-horizon
         v-if="scrollMenu.length !== 0"
         type="totaltext"
@@ -50,6 +52,7 @@ import ItemBlockMono from '@/components/Modules/ItemBlock/ItemBlockMono'
 import ImgTxtHorizon from '@/components/Modules/ImgTxtBlock/ImgTxtHorizon'
 import InfiniteList from '@/components/Modules/ProductList/InfiniteList'
 import { get_products } from '@/api/products'
+import { get_template } from '@/api/template'
 export default{
     components:{
         ImgCarousel,
@@ -62,21 +65,28 @@ export default{
     },
     data(){
         return{
+            loading:false,
+            bannerHeight:0,
             banners:[],
-            menus:[
-                { src:'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/2995824214/O1CN01hf12Pk1h03Ur6i8mk_!!2995824214.jpg_250x250.jpg_.webp', title:'全部商品', color:'#409EFF' },
-                { src:'', title:'新品上架', color:'#67C23A' },
-                { src:'', title:'热销推荐', color:'#E6A23C' },
-                { src:'', title:'更多', color:'#F56C6C' }
-            ],
+            menus:{
+                items:[],
+                visible:false
+            },
             innerWidth:0,
             message:'',
             limitLoading:false,
-            limitItems:[],
+            limit:{
+                visible:false,
+                endTime:null,
+                items:[]
+            },
             colLoading:false,
-            colItems:[],
-            ad1:null,
-            adLoading1:false,
+            newitem:{
+                visible:false,
+                items:[]
+            },
+            ad:null,
+            adLoading:false,
             scrollMenu:[],
             menuLoading:false,
             height:0,
@@ -92,10 +102,12 @@ export default{
     },
     mounted(){
         this.$nextTick(()=>{
-            this.height = window.innerHeight
             this.innerWidth = window.innerWidth
-
+            this.bannerHeight = window.innerWidth * 500 / 750
         })
+    },
+    created(){
+        this.getTemplate()
     },
     methods:{
         getItems(){
@@ -104,6 +116,12 @@ export default{
             this.fetchQuery.page += 1
             get_products(this.fetchQuery).then(r=>{
                 let _data = r.data.body.data
+                let _width = window.innerWidth / 2 - 10
+                if(this.fetchQuery.page === 1 && _data.length > 2){
+                    this.height = _width * 2 + 240
+                }else if(this.fetchQuery.page === 1 && _data.length <= 2){
+                    this.height = _width + 150
+                }
                 if(_data.length === 0){
                     this.infLoading = true
                     this.noresult = true
@@ -116,6 +134,31 @@ export default{
                 this.infLoading = true
                 this.noresult = true
             })
+        },
+        getTemplate(){
+            this.loading = true
+            get_template().then(r=>{
+                let _data = r.data.body
+                if(_data.banners !== undefined) this.banners = _data.banners
+                if(_data.message !== undefined && _data.message) this.message = _data.message
+                if(_data.types !== undefined && _data.types.visible) this.menus = _data.types
+                if(_data.limit !== undefined && _data.limit.visible) this.limit = _data.limit 
+                if(_data.newitem !== undefined && _data.newitem.visible) this.newitem = _data.newitem 
+                if(_data.ad !== undefined && _data.ad.visible) this.ad = _data.ad
+                this.loading = false
+            }).catch(()=>{
+                this.loading = false
+            })
+        },
+        toPage(menu){
+            if(menu.link === undefined || !menu.link.link) return
+            if(menu.link.link === 'Product'){
+                this.$router.push({name:menu.link.link, query:{id:menu.link.query}})
+            }else if(menu.link.link === 'Types'){
+                this.$router.push({name:menu.link.link, params:{id:menu.link.query}})
+            }else{
+                this.$router.push({name:menu.link.link})
+            }
         }
     }
 }

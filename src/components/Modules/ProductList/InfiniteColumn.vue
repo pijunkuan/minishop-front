@@ -11,7 +11,7 @@
             <div @click="toItem(item)">
                 <div v-if="item.saletag" class="infinite-shop-list__saletag"><div>{{ item.saletag }}</div></div>
                 <div v-if="item.stock * 1 === 0" class="infinite-shop-list__soldout"><div>已抢光</div></div>
-                <shop-image :src="item.img" rounded type="stretch" :width="90">
+                <shop-image :src="item.img" rounded type="fit" :width="90">
                     <div class="product-image-error" slot="error"><i class="iconfont icontupian"></i></div>
                 </shop-image>
             </div>

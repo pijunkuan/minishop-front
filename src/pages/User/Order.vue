@@ -17,11 +17,11 @@
         <li v-for="(order,index) in orders" :key="index" class="order-list-item">
             <div class="order-list-item__title" @click="toCheck(order)">
                 <div>{{ order.created_at }}</div>
-                <div :class="{'is-disabled':order.status === 'cancel'}">{{ order.status_value }}</div>
+                <div :class="{'is-disabled':disabledStatus.indexOf(order.status) !== -1}">{{ order.status_value }}</div>
             </div>
             <div v-for="(item,index) in order.items" :key="'i' + index" class="order-list-item__item">
                 <div>
-                    <shop-image :src="item.img_url" type="stretch" :width="60" rounded>
+                    <shop-image class="order-list-item__item-image" :src="item.img_url" type="fit" :width="60" rounded>
                         <div slot="error" class="order-item-placeholder"></div>
                         <div slot="placeholder" class="order-item-placeholder"></div>
                     </shop-image>
@@ -38,11 +38,10 @@
             <div class="order-list-item__bottom">
                 <div>订单总额 ¥ <strong>{{ order.amount ? order.amount : '-' }}</strong></div>
                 <div>
-                    <shop-button size="small" type="border" v-if="order.status === 'pending'" @click="toClose(order)">关闭订单</shop-button>
-                    <!-- <shop-button size="small" type="border" v-if="order.status === 'pending'" @click="toPay(order)">支付订单</shop-button> -->
-                    <shop-button size="small" type="border" v-if="order.status !== 'pending' && order.status !== 'processing' && order.status !== 'cancel'">查看物流</shop-button>
-                    <shop-button size="small" type="border" v-if="order.status !== 'pending' && order.status !== 'cancel'">退换货</shop-button>
-                    <shop-button size="small" v-if="order.status === 'sent'">确认收货</shop-button>
+                    <shop-button size="small" type="border" v-if="canClose.indexOf(order.status) !== -1" @click="toClose(order)">关闭订单</shop-button>
+                    <shop-button size="small" type="border" v-if="canShip.indexOf(order.status) !== -1">查看物流</shop-button>
+                    <shop-button size="small" type="border" v-if="canRefund.indexOf(order.status) !== -1">退换货</shop-button>
+                    <shop-button size="small" v-if="canReceive.indexOf(order.status) !== -1">确认收货</shop-button>
                 </div>
             </div>
         </li>
@@ -66,7 +65,12 @@ export default{
             loading:false,
             nomore:false,
             height:0,
-            orders:[]
+            orders:[],
+            canClose:['pending'],
+            canShip:['sent','partial','success'],
+            canRefund:['processing','sent','partial','success'],
+            canReceive:['sent','partial'],
+            disabledStatus:['cancel','closed','refunded']
         }
     },
     mounted(){
@@ -230,7 +234,7 @@ export default{
     color:$sub-font-color;
 }
 .order-list-item__item-price{
-    width:calc(100% - 200px);
+    width:calc(100% - 202px);
     text-align:right;
 }
 .order-list-item__item-price>div:first-child{
@@ -241,6 +245,10 @@ export default{
 }
 .order-list-item__item-price>div:last-child{
     color:$sub-font-color;
+}
+.order-list-item__item-image{
+    border:1px solid $line-color;
+    border-radius:5px;
 }
 .order-item-placeholder{
     background-color:$line-color;

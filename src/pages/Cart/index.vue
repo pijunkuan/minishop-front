@@ -11,9 +11,10 @@
     </div>
     <div v-else class="cart-list" :style="{height:height + 'px'}">
         <div class="cart-list-items">
-            <div class="cart-list-item" v-for="(item,index) in items" :key="index">
-                <shop-checkbox v-model="selected" :label="item.id" :disabled="!item.visibility" @change="changeSelect(item)"></shop-checkbox>
-                <shop-image :src="item.img_url" rounded type="stretch" :width="80">
+            <div class="cart-list-item" v-for="(item,index) in items" :key="index" style="position:relative">
+                <shop-checkbox v-model="selected" :label="item.id" :disabled="!isEdit && !item.visibility" @change="changeSelect(item)"></shop-checkbox>
+                <div class="cart-item-error" v-if="item.reason">{{ item.reason }}</div>
+                <shop-image :src="item.img_url" rounded type="fit" :width="80">
                     <div class="cart-image-placeholder" slot="error"><i class="iconfont icontupian"></i></div>
                     <div class="cart-image-placeholder" slot="placeholder"><i class="iconfont icontupian"></i></div>
                 </shop-image>
@@ -185,6 +186,7 @@ export default{
         delete(data){
             if(this.complete === data.length){
                 this.getItems()
+                this.selectAll = false
                 this.complete = 0
                 this.isEdit = false
                 return
@@ -342,5 +344,14 @@ export default{
     padding:3px 10px;
     border:1px solid $disabled-color;
     border-radius:25px;
+}
+.cart-item-error{
+    position:absolute;
+    width:calc(100% - 50px);
+    height:100px;
+    line-height:100px;
+    text-align:center;
+    color:#fff;
+    background-color:rgba(0,0,0,0.6);
 }
 </style>

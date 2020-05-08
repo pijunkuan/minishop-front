@@ -5,10 +5,10 @@
         <div class="order-detail-header">
             <div>
                 <div>{{ order.status_value }}</div>
-                <div class="order-detail-header-content" v-if="!loading">{{ order.status === 'pending' ? '您拍下的宝贝未支付，还在等着您哦～' : (order.status === 'processing' ? '订单已经接收，正在抓紧为您包装理货' : (order.status === 'sent' ? '包裹已经坐上火箭朝您飞来～' : (order.status === 'received' ? '宝贝已经到达，期待您留下宝贵意见' : (order.status === 'cancel' ? '订单已经取消' : '退换货正在处理中')))) }}</div>
+                <div class="order-detail-header-content" v-if="!loading">{{ statusTip[order.status] !== undefined ? statusTip[order.status].tip : '' }}</div>
             </div>
             <div>
-                <i v-if="!loading" class="iconfont" :class="order.status === 'pending' ? 'icondaifukuan' : (order.status === 'processing' ? 'icondaifahuo' : (order.status === 'sent' ? 'icondaishouhuo' : (order.status === 'received' ? 'icondaipingjia' : (order.status === 'cancel' ? 'iconjianshao2' : 'iconshouhou'))))"></i>
+                <i v-if="!loading" class="iconfont" :class="statusTip[order.status] !== undefined ? statusTip[order.status].icon : ''"></i>
             </div>
         </div>
         <div style="position:relative">
@@ -52,7 +52,7 @@
                 <div><strong>支付方式</strong></div>
                 <div>
                     <div v-if="order.payments.length === 0"> - </div>
-                    <div v-for="(payment,index) in order.payments" :key="index">
+                    <div v-for="(payment,index) in order.payments" :key="index" class="order-item-list">
                         <div>{{ payments[payment.payment_method] }}</div>
                     </div>
                 </div>
@@ -65,8 +65,10 @@
                 <div><strong>配送信息</strong></div>
                 <div>
                     <div v-if="order.shipments.length === 0"> - </div>
-                    <div v-for="(shipment,index) in order.shipments" :key="index">
-                        <div>{{ shipment }}</div>
+                    <div v-for="(shipment,index) in order.shipments" :key="index" class="order-item-list">
+                        <div>{{ shipment.shipment_company }}</div>
+                        <div><strong>{{ shipment.shipment_no }}</strong></div>
+                        <div>{{ shipment.created_at }}</div>
                     </div>
                 </div>
             </div>
@@ -93,10 +95,12 @@
             </div>
         </div>
     </div>
-    <div class="order-detail-bottom" v-if="order.status !== 'cancel'">
-        <shop-button size="small" v-if="order.status === 'sent'">确认收货</shop-button>
-        <shop-button size="small" v-if="order.status !== 'pending' && order.status !== 'refunding'">退换货</shop-button>
-        <shop-button size="small" v-if="order.status === 'pending'" :disabled="btnLoading" @click="toClose">关闭订单</shop-button>
+    <div class="order-detail-bottom" v-if="footerFold.indexOf(order.status) === -1">
+        <shop-button size="small" v-if="canClose.indexOf(order.status) !== -1">支付订单</shop-button>
+        <shop-button size="small" v-if="canShip.indexOf(order.status) !== -1">查看物流</shop-button>
+        <shop-button size="small" v-if="canReceive.indexOf(order.status) !== -1">确认收货</shop-button>
+        <shop-button size="small" v-if="canRefund.indexOf(order.status) !== -1">退换货</shop-button>
+        <shop-button size="small" v-if="canClose.indexOf(order.status) !== -1" :disabled="btnLoading" @click="toClose">关闭订单</shop-button>
     </div>
 </div>
 </template>
@@ -118,7 +122,23 @@ export default{
             btnLoading:false,
             payments:{
                 wallet:'钱包支付'
-            }
+            },
+            statusTip:{
+                pending:{tip:'您拍下的宝贝未支付，还在等着您哦～',icon:'icondaifukuan'},
+                processing:{tip:'订单已经接收，正在抓紧为您包装理货',icon:'icondaifahuo'},
+                sent:{tip:'包裹已经坐上火箭朝您飞来～',icon:'iconwuliu'},
+                partial:{tip:'部分宝贝已经坐上火箭朝您飞来，剩下的也在加紧准备出发～',icon:'iconwuliu'},
+                refunding:{tip:'退换货正在处理中',icon:'iconshouhou'},
+                refunded:{tip:'已处理退换货',icon:'iconjianshao2'},
+                cancel:{tip:'订单已经取消',icon:'iconjianshao2'},
+                closed:{tip:'订单已经关闭',icon:'iconjianshao2'},
+                success:{tip:'宝贝已经到达，期待您留下宝贵意见',icon:'icondaishouhuo'}
+            },
+            footerFold:['refunding','refunded','cancel','closed'],
+            canClose:['pending'],
+            canShip:['sent','partial','success'],
+            canRefund:['processing','sent','partial','success'],
+            canReceive:['sent','partial']
         }
     },
     created(){
@@ -139,7 +159,7 @@ export default{
                     this.order.total_quantity += v.quantity
                 })
                 this.order.payments = this.order.payments.filter((val)=>{return val.status === 'success'})
-                if(this.order.status === 'cancel') this.height = window.innerHeight - 49
+                if(this.footerFold.indexOf(this.order.status) !== -1) this.height = window.innerHeight - 49
                     else this.height = window.innerHeight - 95
                 this.loading = false
             }).catch(e=>{
@@ -331,5 +351,15 @@ export default{
     background-color:#fff;
     text-align:right;
     box-shadow:0 -1px 4px 2px rgba(0,0,0,0.1);
+}
+.order-detail-bottom button{
+    margin-left:8px;
+}
+
+.order-item-list{
+    margin-bottom:10px;
+}
+.order-item-list:last-child{
+    margin-bottom:0;
 }
 </style>
